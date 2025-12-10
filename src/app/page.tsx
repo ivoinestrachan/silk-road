@@ -1,65 +1,140 @@
-import Image from "next/image";
+'use client';
+
+import { useState } from 'react';
+import dynamic from 'next/dynamic';
+import CaravanSidebar from '@/components/CaravanSidebar';
+import PassportViewer from '@/components/PassportViewer';
+import {
+  allCaravans,
+  guildMembers,
+  properties,
+  currentUserPassport,
+} from '@/data/mockData';
+import { Caravan } from '@/types/guild';
+
+// Import GuildMap dynamically to avoid SSR issues with Leaflet
+const GuildMap = dynamic(() => import('@/components/GuildMap'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full flex items-center justify-center bg-gray-100">
+      <p className="text-gray-600">Loading map...</p>
+    </div>
+  ),
+});
 
 export default function Home() {
+  const [selectedCaravan, setSelectedCaravan] = useState<Caravan | null>(null);
+  const [activeView, setActiveView] = useState<'map' | 'passport'>('map');
+
+  // Get current user member data
+  const currentMember = guildMembers.find(
+    (m) => m.id === currentUserPassport.memberId
+  );
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="flex flex-col md:flex-row h-screen overflow-hidden bg-gradient-to-br from-gray-50 to-blue-50">
+      {/* Sidebar */}
+      <div className="w-full md:w-96 lg:w-[28rem] flex-shrink-0 overflow-y-auto border-r border-gray-200">
+        <CaravanSidebar
+          caravans={allCaravans}
+          selectedCaravan={selectedCaravan}
+          onSelectCaravan={setSelectedCaravan}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col">
+        {/* Top Navigation Bar */}
+        <div className="bg-amber-900 border-b-4 border-amber-700 px-4 md:px-6 py-3 md:py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 md:gap-0">
+          <div className="flex items-center gap-2 md:gap-4">
+            <h1 className="text-amber-100 text-lg md:text-xl font-bold">
+              Telos Guild Map
+            </h1>
+            <div className="hidden lg:flex items-center gap-2 text-amber-200 text-sm">
+              <span>🏛️</span>
+              <span>Global network of builders and innovators</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 md:gap-3 w-full md:w-auto">
+            <button
+              onClick={() => setActiveView('map')}
+              className={`flex-1 md:flex-none px-3 md:px-4 py-2 rounded-lg font-medium transition-all text-sm md:text-base cursor-pointer ${
+                activeView === 'map'
+                  ? 'bg-amber-700 text-amber-50'
+                  : 'bg-amber-950 text-amber-300 hover:bg-amber-800'
+              }`}
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              🗺️ Map
+            </button>
+            <button
+              onClick={() => setActiveView('passport')}
+              className={`flex-1 md:flex-none px-3 md:px-4 py-2 rounded-lg font-medium transition-all text-sm md:text-base cursor-pointer ${
+                activeView === 'passport'
+                  ? 'bg-amber-700 text-amber-50'
+                  : 'bg-amber-950 text-amber-300 hover:bg-amber-800'
+              }`}
             >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+              📜 Passport
+            </button>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+
+        {/* Content */}
+        <div className="flex-1 relative">
+          {activeView === 'map' ? (
+            <GuildMap
+              caravans={allCaravans}
+              members={guildMembers}
+              properties={properties}
+              selectedCaravan={selectedCaravan}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+          ) : (
+            <div className="h-full flex items-center justify-center bg-gradient-to-br from-gray-50 to-blue-50 p-4 md:p-8 overflow-auto">
+              <PassportViewer
+                passport={currentUserPassport}
+                memberName={currentMember?.name || 'Unknown Member'}
+              />
+            </div>
+          )}
         </div>
-      </main>
+
+        {/* Legend */}
+        {activeView === 'map' && (
+          <div className="absolute bottom-4 right-4 bg-white rounded-lg shadow-lg p-4 border border-gray-200">
+            <h3 className="font-semibold text-gray-900 mb-3 text-sm">
+              Map Legend
+            </h3>
+            <div className="space-y-2 text-xs">
+              <div className="flex items-center gap-2">
+                <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-[10px]">
+                  🚐
+                </div>
+                <span className="text-gray-700">Live Caravan</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-5 h-5 bg-amber-500 rounded"></div>
+                <span className="text-gray-700">Upcoming Route</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-5 h-5 bg-gray-400 rounded"></div>
+                <span className="text-gray-700">Completed Route</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center text-[10px]">
+                  🏛️
+                </div>
+                <span className="text-gray-700">Properties</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center text-[10px]">
+                  👤
+                </div>
+                <span className="text-gray-700">Guild Members</span>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

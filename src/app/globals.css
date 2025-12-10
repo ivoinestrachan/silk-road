@@ -24,3 +24,28 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Map marker animations */
+.map-marker {
+  animation: subtle-pulse 2s ease-in-out infinite;
+  cursor: pointer !important;
+}
+
+@keyframes subtle-pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+/* Leaflet marker and popup cursor styles */
+.leaflet-marker-icon,
+.leaflet-interactive {
+  cursor: pointer !important;
+}
+
+.leaflet-popup-content-wrapper {
+  cursor: default;
+}
