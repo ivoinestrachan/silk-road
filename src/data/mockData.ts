@@ -1,6 +1,5 @@
 import { Caravan, GuildMember, Property, Passport } from '@/types/guild';
 
-// Previous caravan - Slush 2025
 export const slushCaravan: Caravan = {
   id: 'slush-2025',
   name: 'Slush Caravan 2025',
@@ -10,14 +9,12 @@ export const slushCaravan: Caravan = {
     end: { lat: 60.1699, lng: 24.9384, name: 'Helsinki' },
     waypoints: [
       { lat: 51.5074, lng: -0.1278, name: 'London' },
-      { lat: 51.2194, lng: 4.4025, name: 'Antwerp' },
-      { lat: 52.3676, lng: 4.9041, name: 'Amsterdam' },
-      { lat: 53.5511, lng: 9.9937, name: 'Hamburg' },
-      { lat: 53.0793, lng: 8.8017, name: 'Bremen' },
-      { lat: 54.3233, lng: 10.1228, name: 'Kiel' },
-      { lat: 55.6761, lng: 12.5683, name: 'Copenhagen' },
-      { lat: 59.3293, lng: 18.0686, name: 'Stockholm' },
-      { lat: 60.1699, lng: 24.9384, name: 'Helsinki' },
+      { lat: 51.2194, lng: 4.4025, name: 'Antwerp, Belgium' },
+      { lat: 52.5200, lng: 13.4050, name: 'Berlin, Germany' },
+      { lat: 52.2297, lng: 21.0122, name: 'Warsaw, Poland' },
+      { lat: 56.9496, lng: 24.1052, name: 'Riga, Latvia' },
+      { lat: 59.4370, lng: 24.7536, name: 'Tallinn, Estonia' }, // Added to avoid water crossing
+      { lat: 60.1699, lng: 24.9384, name: 'Helsinki, Finland' },
     ],
   },
   stops: [
@@ -28,31 +25,37 @@ export const slushCaravan: Caravan = {
       description: 'Starting point - Kings Cross gathering',
     },
     {
-      location: { lat: 51.2194, lng: 4.4025, name: 'Antwerp' },
+      location: { lat: 51.2194, lng: 4.4025, name: 'Antwerp, Belgium' },
       arrivalDate: '2025-11-16',
       departureDate: '2025-11-17',
       description: 'Historic Hanseatic trading city',
     },
     {
-      location: { lat: 52.3676, lng: 4.9041, name: 'Amsterdam' },
+      location: { lat: 52.5200, lng: 13.4050, name: 'Berlin, Germany' },
       arrivalDate: '2025-11-17',
       departureDate: '2025-11-18',
-      description: 'Canal city founded by Hanseatic merchants',
+      description: 'German capital stopover',
     },
     {
-      location: { lat: 53.5511, lng: 9.9937, name: 'Hamburg' },
+      location: { lat: 52.2297, lng: 21.0122, name: 'Warsaw, Poland' },
       arrivalDate: '2025-11-18',
       departureDate: '2025-11-19',
-      description: 'Major Hanseatic League city',
+      description: 'Polish capital visit',
     },
     {
-      location: { lat: 59.3293, lng: 18.0686, name: 'Stockholm' },
+      location: { lat: 56.9496, lng: 24.1052, name: 'Riga, Latvia' },
+      arrivalDate: '2025-11-19',
+      departureDate: '2025-11-19',
+      description: 'Baltic hub',
+    },
+    {
+      location: { lat: 59.4370, lng: 24.7536, name: 'Tallinn, Estonia' },
       arrivalDate: '2025-11-19',
       departureDate: '2025-11-20',
-      description: 'Swedish Hanseatic hub',
+      description: 'Estonian capital before ferry to Helsinki',
     },
     {
-      location: { lat: 60.1699, lng: 24.9384, name: 'Helsinki' },
+      location: { lat: 60.1699, lng: 24.9384, name: 'Helsinki, Finland' },
       arrivalDate: '2025-11-20',
       departureDate: '2025-11-23',
       description: 'Slush Conference destination',
@@ -61,7 +64,6 @@ export const slushCaravan: Caravan = {
   participants: 24,
   vehicles: 7,
   boats: 5,
-  horses: 12,
   startDate: '2025-11-15',
   endDate: '2025-11-23',
   images: ['/caravans/slush-1.jpg', '/caravans/slush-2.jpg'],
@@ -74,7 +76,6 @@ export const slushCaravan: Caravan = {
     'Epic journey following the ancient Hanseatic routes to the Slush conference in Helsinki',
 };
 
-// Upcoming caravan - Davos 2026
 export const davosCaravan: Caravan = {
   id: 'davos-2026',
   name: 'Davos Caravan 2026',
@@ -132,7 +133,6 @@ export const davosCaravan: Caravan = {
 
 export const allCaravans = [davosCaravan, slushCaravan];
 
-// Guild members
 export const guildMembers: GuildMember[] = [
   {
     id: 'member-1',
@@ -174,13 +174,43 @@ export const guildMembers: GuildMember[] = [
     bio: 'Nordic representative',
     joinedDate: '2025-06-15',
   },
+  {
+    id: 'member-6',
+    name: 'Li Wei',
+    passportId: 'TG-2025-006',
+    location: { lat: 22.5431, lng: 114.0579, name: 'Shenzhen, China' },
+    bio: 'Shenzhen supply chain liaison',
+    joinedDate: '2025-07-01',
+  },
 ];
 
-// Properties / Kontors
+export const partnerVCs: GuildMember[] = [
+  {
+    id: 'vc-copenhagen',
+    name: 'Nordic Ventures',
+    passportId: 'VC-2025-001',
+    location: { lat: 55.6761, lng: 12.5683, name: 'Copenhagen, Denmark' },
+    bio: 'Leading Nordic venture capital firm',
+    joinedDate: '2025-02-01',
+  },
+];
+
+export const supplierLinks: Property[] = [
+  {
+    id: 'supplier-shenzhen',
+    name: 'Shenzhen Manufacturing Hub',
+    type: 'supplier',
+    location: { lat: 22.5431, lng: 114.0579, name: 'Shenzhen, China' },
+    description: 'Electronics and hardware manufacturing partner',
+    capacity: 0,
+    amenities: ['Manufacturing', 'R&D', 'Logistics'],
+  },
+];
+
 export const properties: Property[] = [
   {
-    id: 'prop-1',
-    name: 'Kings Cross House',
+    id: 'prop-telos',
+    name: 'Telos House',
     type: 'house',
     location: { lat: 51.5306, lng: -0.1239, name: 'Kings Cross, London' },
     description: 'Main London hub and guild headquarters',
@@ -207,7 +237,6 @@ export const properties: Property[] = [
   },
 ];
 
-// Current user passport (hardcoded)
 export const currentUserPassport: Passport = {
   id: 'TG-2025-001',
   memberId: 'member-1',

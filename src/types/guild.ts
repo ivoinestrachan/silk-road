@@ -49,7 +49,7 @@ export interface GuildMember {
 export interface Property {
   id: string;
   name: string;
-  type: 'house' | 'kontor' | 'office' | 'other';
+  type: 'house' | 'kontor' | 'office' | 'supplier' | 'other';
   location: Location;
   description?: string;
   capacity?: number;

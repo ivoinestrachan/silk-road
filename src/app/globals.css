@@ -49,3 +49,30 @@ body {
 .leaflet-popup-content-wrapper {
   cursor: default;
 }
+
+/* Custom scrollbar styling */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0d2020;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #18503B, #2b6563);
+  border-radius: 5px;
+  border: 2px solid #0d2020;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #2b6563, #18503B);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2b6563 #0d2020;
+}
