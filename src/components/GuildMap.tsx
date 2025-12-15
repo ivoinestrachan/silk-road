@@ -29,33 +29,34 @@ function GuildMap({
     // Initialize map centered on Europe with custom styles
     const map = L.map(mapContainerRef.current, {
       zoomControl: true,
-      attributionControl: true,
+      attributionControl: false,
     }).setView([52.52, 13.405], 5);
     mapRef.current = map;
 
-    // Use Stadia Stamen Terrain for natural green land colors
-    L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}{r}.png', {
+    // Use CartoDB Positron for customizable light colors
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
       attribution:
-        '&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://www.stamen.com/" target="_blank">Stamen Design</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      maxZoom: 19,
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains: 'abcd',
+      maxZoom: 20,
     }).addTo(map);
 
-    // Add CSS filter to match darker green color palette (#18503B, #2b6563) - lighter version
+    // Add CSS filter to match cream/beige color palette
     const style = document.createElement('style');
     style.innerHTML = `
       .leaflet-tile-container {
-        filter: saturate(0.9) hue-rotate(160deg) brightness(0.85) contrast(1.1);
+        filter: saturate(0.5) brightness(1.05) contrast(0.9) hue-rotate(20deg);
       }
       .leaflet-popup-content-wrapper {
-        background: linear-gradient(135deg, #18503B, #2b6563);
-        color: #E8E4D9;
-        border: 2px solid #2b6563;
+        background: linear-gradient(135deg, #2b4539, #3f6053);
+        color: #ffffff;
+        border: 2px solid #3f6053;
         font-family: ui-serif, Georgia, serif;
         box-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.1);
       }
       .leaflet-popup-tip {
-        background: #18503B;
-        border: 2px solid #2b6563;
+        background: #2b4539;
+        border: 2px solid #3f6053;
       }
       .leaflet-interactive {
         outline: none !important;
@@ -90,10 +91,10 @@ function GuildMap({
       });
     };
 
-    const propertyIcon = createIcon('#f59e0b', '🏛️');
-    const memberIcon = createIcon('#3b82f6', '👤');
-    const partnerVCIcon = createIcon('#9333ea', '💼');
-    const supplierIcon = createIcon('#16a34a', '🏭');
+    const propertyIcon = createIcon('#3f6053', '🏛️');
+    const memberIcon = createIcon('#3f6053', '👤');
+    const partnerVCIcon = createIcon('#F6FAF6', '💼');
+    const supplierIcon = createIcon('#2b4539', '🏭');
     const liveCaravanIcon = createIcon('#ef4444', '🚐');
 
     // Custom icon for Telos House using PNG logo
@@ -121,11 +122,11 @@ function GuildMap({
         .addTo(map)
         .bindPopup(`
           <div style="padding: 12px;">
-            <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #5eead4;">🏛️ ${property.name}</h3>
-            <p style="margin: 4px 0; font-size: 13px; color: #99f6e4;"><strong>Type:</strong> ${property.type.charAt(0).toUpperCase() + property.type.slice(1)}</p>
-            ${property.description ? `<p style="margin: 4px 0; font-size: 13px; color: #99f6e4;">${property.description}</p>` : ''}
-            ${property.capacity ? `<p style="margin: 4px 0; font-size: 13px; color: #99f6e4;"><strong>Capacity:</strong> ${property.capacity} members</p>` : ''}
-            ${property.amenities && property.amenities.length > 0 ? `<p style="margin: 4px 0; font-size: 12px; color: #5eead4;">${property.amenities.join(' • ')}</p>` : ''}
+            <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #F6FAF6;">🏛️ ${property.name}</h3>
+            <p style="margin: 4px 0; font-size: 13px; color: #ffffff;"><strong>Type:</strong> ${property.type.charAt(0).toUpperCase() + property.type.slice(1)}</p>
+            ${property.description ? `<p style="margin: 4px 0; font-size: 13px; color: #ffffff;">${property.description}</p>` : ''}
+            ${property.capacity ? `<p style="margin: 4px 0; font-size: 13px; color: #ffffff;"><strong>Capacity:</strong> ${property.capacity} members</p>` : ''}
+            ${property.amenities && property.amenities.length > 0 ? `<p style="margin: 4px 0; font-size: 12px; color: #ffffff;">${property.amenities.join(' • ')}</p>` : ''}
           </div>
         `);
 
@@ -145,10 +146,10 @@ function GuildMap({
         .addTo(map)
         .bindPopup(`
           <div style="padding: 12px;">
-            <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #5eead4;">👤 ${member.name}</h3>
-            <p style="margin: 4px 0; font-size: 13px; color: #99f6e4;"><strong>Passport:</strong> ${member.passportId}</p>
-            ${member.bio ? `<p style="margin: 4px 0; font-size: 13px; color: #99f6e4; font-style: italic;">${member.bio}</p>` : ''}
-            <p style="margin: 4px 0 0 0; font-size: 12px; color: #5eead4;">📍 ${member.location.name}</p>
+            <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #F6FAF6;">👤 ${member.name}</h3>
+            <p style="margin: 4px 0; font-size: 13px; color: #ffffff;"><strong>Passport:</strong> ${member.passportId}</p>
+            ${member.bio ? `<p style="margin: 4px 0; font-size: 13px; color: #ffffff; font-style: italic;">${member.bio}</p>` : ''}
+            <p style="margin: 4px 0 0 0; font-size: 12px; color: #ffffff;">📍 ${member.location.name}</p>
           </div>
         `);
 
@@ -246,13 +247,13 @@ function GuildMap({
         })
         .bindPopup(`
           <div style="padding: 12px;">
-            <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #5eead4;">${caravan.name}</h3>
-            <p style="margin: 4px 0; font-size: 13px; color: #99f6e4;"><strong>Status:</strong> ${caravan.status.toUpperCase()}</p>
-            <p style="margin: 4px 0; font-size: 13px; color: #99f6e4;"><strong>Route:</strong> ${caravan.route.start.name} → ${caravan.route.end.name}</p>
-            ${caravan.description ? `<p style="margin: 4px 0; font-size: 13px; color: #99f6e4; font-style: italic;">${caravan.description}</p>` : ''}
-            ${caravan.participants > 0 ? `<p style="margin: 4px 0; font-size: 13px; color: #99f6e4;"><strong>Participants:</strong> ${caravan.participants}</p>` : ''}
-            ${caravan.boats && caravan.boats > 0 ? `<p style="margin: 4px 0; font-size: 13px; color: #99f6e4;">⛵ ${caravan.boats} Boats • 🐴 ${caravan.horses || 0} Horses</p>` : ''}
-            ${caravan.stops && caravan.stops.length > 0 ? `<p style="margin: 4px 0; font-size: 13px; color: #99f6e4;">⚑ ${caravan.stops.length} Waypoints</p>` : ''}
+            <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #F6FAF6;">${caravan.name}</h3>
+            <p style="margin: 4px 0; font-size: 13px; color: #ffffff;"><strong>Status:</strong> ${caravan.status.toUpperCase()}</p>
+            <p style="margin: 4px 0; font-size: 13px; color: #ffffff;"><strong>Route:</strong> ${caravan.route.start.name} → ${caravan.route.end.name}</p>
+            ${caravan.description ? `<p style="margin: 4px 0; font-size: 13px; color: #ffffff; font-style: italic;">${caravan.description}</p>` : ''}
+            ${caravan.participants > 0 ? `<p style="margin: 4px 0; font-size: 13px; color: #ffffff;"><strong>Participants:</strong> ${caravan.participants}</p>` : ''}
+            ${caravan.boats && caravan.boats > 0 ? `<p style="margin: 4px 0; font-size: 13px; color: #ffffff;">⛵ ${caravan.boats} Boats • 🐴 ${caravan.horses || 0} Horses</p>` : ''}
+            ${caravan.stops && caravan.stops.length > 0 ? `<p style="margin: 4px 0; font-size: 13px; color: #ffffff;">⚑ ${caravan.stops.length} Waypoints</p>` : ''}
           </div>
         `);
 
@@ -299,7 +300,7 @@ function GuildMap({
         fillOpacity: 0.8,
       })
         .addTo(map)
-        .bindPopup(`<strong style="color: #5eead4;">Start:</strong> <span style="color: #99f6e4;">${caravan.route.start.name}</span>`);
+        .bindPopup(`<strong style="color: #F6FAF6;">Start:</strong> <span style="color: #ffffff;">${caravan.route.start.name}</span>`);
 
       // Add end marker
       L.circleMarker([caravan.route.end.lat, caravan.route.end.lng], {
@@ -311,7 +312,7 @@ function GuildMap({
         fillOpacity: 0.8,
       })
         .addTo(map)
-        .bindPopup(`<strong style="color: #5eead4;">End:</strong> <span style="color: #99f6e4;">${caravan.route.end.name}</span>`);
+        .bindPopup(`<strong style="color: #F6FAF6;">End:</strong> <span style="color: #ffffff;">${caravan.route.end.name}</span>`);
 
       // Add current location for live caravans
       if (caravan.status === 'live' && caravan.currentLocation) {
@@ -324,10 +325,10 @@ function GuildMap({
           .addTo(map)
           .bindPopup(`
             <div style="padding: 12px;">
-              <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #fca5a5;">🔴 LIVE: ${caravan.name}</h3>
-              <p style="margin: 4px 0; font-size: 13px; color: #99f6e4;"><strong>Current Location:</strong> ${caravan.currentLocation.name}</p>
-              <p style="margin: 4px 0; font-size: 13px; color: #99f6e4;"><strong>Participants:</strong> ${caravan.participants}</p>
-              <p style="margin: 4px 0; font-size: 13px; color: #99f6e4;"><strong>Vehicles:</strong> ${caravan.vehicles}</p>
+              <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #ef4444;">🔴 LIVE: ${caravan.name}</h3>
+              <p style="margin: 4px 0; font-size: 13px; color: #ffffff;"><strong>Current Location:</strong> ${caravan.currentLocation.name}</p>
+              <p style="margin: 4px 0; font-size: 13px; color: #ffffff;"><strong>Participants:</strong> ${caravan.participants}</p>
+              <p style="margin: 4px 0; font-size: 13px; color: #ffffff;"><strong>Vehicles:</strong> ${caravan.vehicles}</p>
             </div>
           `);
       }

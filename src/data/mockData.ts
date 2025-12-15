@@ -159,14 +159,6 @@ export const guildMembers: GuildMember[] = [
     joinedDate: '2025-04-20',
   },
   {
-    id: 'member-4',
-    name: 'Sofia Martinez',
-    passportId: 'TG-2025-004',
-    location: { lat: 52.3676, lng: 4.9041, name: 'Amsterdam' },
-    bio: 'Amsterdam node operator',
-    joinedDate: '2025-05-10',
-  },
-  {
     id: 'member-5',
     name: 'Marcus Berg',
     passportId: 'TG-2025-005',
@@ -216,24 +208,6 @@ export const properties: Property[] = [
     description: 'Main London hub and guild headquarters',
     capacity: 20,
     amenities: ['Coworking', 'Kitchen', 'Event Space'],
-  },
-  {
-    id: 'prop-2',
-    name: 'Amsterdam Kontor',
-    type: 'kontor',
-    location: { lat: 52.3676, lng: 4.9041, name: 'Amsterdam' },
-    description: 'Historic canal house converted to guild space',
-    capacity: 12,
-    amenities: ['Meeting Rooms', 'Kitchen'],
-  },
-  {
-    id: 'prop-3',
-    name: 'Hamburg Trading Post',
-    type: 'office',
-    location: { lat: 53.5511, lng: 9.9937, name: 'Hamburg' },
-    description: 'Coworking space in historic Hanseatic quarter',
-    capacity: 15,
-    amenities: ['Coworking', 'Conference Room'],
   },
 ];
 
