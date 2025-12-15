@@ -119,15 +119,15 @@ export default function PassportOverlay({ passportId, isAdmin, onLogout }: Passp
       {/* Passport Button - Fixed positioning */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed top-4 right-4 z-[10000] bg-gradient-to-br from-[#3f6053] to-[#2b4539] p-3 rounded-lg shadow-2xl border-2 border-[#F6FAF6] hover:scale-105 transition-all duration-300"
+        className="fixed top-4 right-4 z-[10000] bg-[#2b4539]/80 backdrop-blur-sm p-3 rounded-lg shadow-2xl border-2 border-[#F6FAF6]/50 hover:bg-[#2b4539]/90 hover:border-[#F6FAF6] transition-all duration-300"
         style={{
-          boxShadow: '0 8px 32px rgba(246,250,246,0.4), inset 0 1px 0 rgba(255,255,255,0.3)'
+          boxShadow: '0 8px 32px rgba(0,0,0,0.4), inset 0 1px 2px rgba(246,250,246,0.1)'
         }}
         aria-label="Open Passport"
       >
         <div className="flex items-center gap-2">
           <span className="text-2xl">🛂</span>
-          <span className="text-sm font-serif text-white uppercase tracking-wide">Passport</span>
+          <span className="text-sm font-serif text-[#F6FAF6] uppercase tracking-wide">Passport</span>
         </div>
       </button>
 

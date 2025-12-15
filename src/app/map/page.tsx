@@ -172,7 +172,7 @@ export default function MapPage() {
 
     if (selectedElement.type === 'property') {
       const property = selectedElement.data as Property;
-      const isTelosHouse = property.id === 'prop-telos';
+      const isTelosHouse = property.id === 'prop-telos' || property.id === 'prop-telos-shenzhen';
 
       if (isTelosHouse) {
         return (
@@ -544,9 +544,7 @@ export default function MapPage() {
                   <span className="text-white/90">Telos House</span>
                 </div>
                 <div className="flex items-center gap-2.5">
-                  <div className="w-5 h-5 bg-[#F6FAF6]/70 rounded-full flex items-center justify-center border border-[#F6FAF6]">
-                    💼
-                  </div>
+                  <div className="w-5 h-5 bg-[#F6FAF6]/90 rounded-full border-2 border-[#3f6053]"></div>
                   <span className="text-white/90">Partner VCs</span>
                 </div>
                 <div className="flex items-center gap-2.5">

@@ -41,11 +41,11 @@ function GuildMap({
       maxZoom: 20,
     }).addTo(map);
 
-    // Add CSS filter to match cream/beige color palette
+    // Add CSS filter to match cream/beige color palette with green water
     const style = document.createElement('style');
     style.innerHTML = `
       .leaflet-tile-container {
-        filter: saturate(0.5) brightness(1.05) contrast(0.9) hue-rotate(20deg);
+        filter: saturate(0.8) brightness(0.95) contrast(0.9) hue-rotate(80deg);
       }
       .leaflet-popup-content-wrapper {
         background: linear-gradient(135deg, #2b4539, #3f6053);
@@ -93,7 +93,6 @@ function GuildMap({
 
     const propertyIcon = createIcon('#3f6053', '🏛️');
     const memberIcon = createIcon('#3f6053', '👤');
-    const partnerVCIcon = createIcon('#F6FAF6', '💼');
     const supplierIcon = createIcon('#2b4539', '🏭');
     const liveCaravanIcon = createIcon('#ef4444', '🚐');
 
@@ -110,7 +109,7 @@ function GuildMap({
     properties.forEach((property) => {
       // Use custom icon based on property type
       let icon = propertyIcon;
-      if (property.id === 'prop-telos') {
+      if (property.id === 'prop-telos' || property.id === 'prop-telos-shenzhen') {
         icon = telosHouseIcon;
       } else if (property.type === 'supplier') {
         icon = supplierIcon;
@@ -137,24 +136,51 @@ function GuildMap({
 
     // Add guild members
     members.forEach((member) => {
-      // Use different icon for Partner VCs
-      const icon = member.passportId.startsWith('VC-') ? partnerVCIcon : memberIcon;
+      // Use circle marker for Partner VCs for better visibility
+      const isPartnerVC = member.passportId.startsWith('VC-');
 
-      const marker = L.marker([member.location.lat, member.location.lng], {
-        icon: icon,
-      })
-        .addTo(map)
-        .bindPopup(`
-          <div style="padding: 12px;">
-            <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #F6FAF6;">👤 ${member.name}</h3>
-            <p style="margin: 4px 0; font-size: 13px; color: #ffffff;"><strong>Passport:</strong> ${member.passportId}</p>
-            ${member.bio ? `<p style="margin: 4px 0; font-size: 13px; color: #ffffff; font-style: italic;">${member.bio}</p>` : ''}
-            <p style="margin: 4px 0 0 0; font-size: 12px; color: #ffffff;">📍 ${member.location.name}</p>
-          </div>
-        `);
+      if (isPartnerVC) {
+        // Use circle marker for VCs
+        L.circleMarker([member.location.lat, member.location.lng], {
+          radius: 12,
+          fillColor: '#F6FAF6',
+          color: '#3f6053',
+          weight: 3,
+          opacity: 1,
+          fillOpacity: 0.9,
+        })
+          .addTo(map)
+          .bindPopup(`
+            <div style="padding: 12px;">
+              <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #F6FAF6;">💼 ${member.name}</h3>
+              <p style="margin: 4px 0; font-size: 13px; color: #ffffff;"><strong>Passport:</strong> ${member.passportId}</p>
+              ${member.bio ? `<p style="margin: 4px 0; font-size: 13px; color: #ffffff; font-style: italic;">${member.bio}</p>` : ''}
+              <p style="margin: 4px 0 0 0; font-size: 12px; color: #ffffff;">📍 ${member.location.name}</p>
+            </div>
+          `)
+          .on('click', () => {
+            if (onElementClick) {
+              onElementClick({ type: 'member', data: member });
+            }
+          });
+      } else {
+        // Use regular icon for members
+        const marker = L.marker([member.location.lat, member.location.lng], {
+          icon: memberIcon,
+        })
+          .addTo(map)
+          .bindPopup(`
+            <div style="padding: 12px;">
+              <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #F6FAF6;">👤 ${member.name}</h3>
+              <p style="margin: 4px 0; font-size: 13px; color: #ffffff;"><strong>Passport:</strong> ${member.passportId}</p>
+              ${member.bio ? `<p style="margin: 4px 0; font-size: 13px; color: #ffffff; font-style: italic;">${member.bio}</p>` : ''}
+              <p style="margin: 4px 0 0 0; font-size: 12px; color: #ffffff;">📍 ${member.location.name}</p>
+            </div>
+          `);
 
-      if (onElementClick) {
-        marker.on('click', () => onElementClick({ type: 'member', data: member }));
+        if (onElementClick) {
+          marker.on('click', () => onElementClick({ type: 'member', data: member }));
+        }
       }
     });
 

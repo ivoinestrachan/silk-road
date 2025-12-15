@@ -209,6 +209,15 @@ export const properties: Property[] = [
     capacity: 20,
     amenities: ['Coworking', 'Kitchen', 'Event Space'],
   },
+  {
+    id: 'prop-telos-shenzhen',
+    name: 'Telos House Shenzhen',
+    type: 'house',
+    location: { lat: 22.5431, lng: 114.0579, name: 'Shenzhen, China' },
+    description: 'Asia-Pacific hub and innovation center',
+    capacity: 15,
+    amenities: ['Coworking', 'Hardware Lab', 'Manufacturing Access'],
+  },
 ];
 
 export const currentUserPassport: Passport = {
