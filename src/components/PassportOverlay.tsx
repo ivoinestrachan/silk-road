@@ -328,9 +328,9 @@ export default function PassportOverlay({ passportId, isAdmin, onLogout }: Passp
                         <p className="text-[9px] text-red-900 font-bold uppercase text-center">London</p>
                         <p className="text-[8px] text-red-700 text-center">Nov 2025</p>
                       </div>
-                      <div className="border-2 border-[#F6FAF6]/30 rounded p-2 bg-[#F6FAF6]/10 rotate-[2deg]">
-                        <p className="text-[9px] text-[#000000] font-bold uppercase text-center">Berlin</p>
-                        <p className="text-[8px] text-[#2b4539] text-center">Nov 2025</p>
+                      <div className="border-2 border-blue-800/30 rounded p-2 bg-blue-50/50 rotate-[2deg]">
+                        <p className="text-[9px] text-blue-900 font-bold uppercase text-center">Berlin</p>
+                        <p className="text-[8px] text-blue-700 text-center">Nov 2025</p>
                       </div>
                       <div className="border-2 border-green-800/30 rounded p-2 bg-green-50/50 rotate-[3deg]">
                         <p className="text-[9px] text-green-900 font-bold uppercase text-center">Warsaw</p>

@@ -41,11 +41,11 @@ function GuildMap({
       maxZoom: 20,
     }).addTo(map);
 
-    // Add CSS filter to match cream/beige color palette with green water
+    // Add CSS filter to match green water and cream/beige land
     const style = document.createElement('style');
     style.innerHTML = `
       .leaflet-tile-container {
-        filter: saturate(0.8) brightness(0.95) contrast(0.9) hue-rotate(80deg);
+        filter: saturate(1.2) brightness(0.85) contrast(1.1) hue-rotate(140deg);
       }
       .leaflet-popup-content-wrapper {
         background: linear-gradient(135deg, #2b4539, #3f6053);
@@ -96,12 +96,21 @@ function GuildMap({
     const supplierIcon = createIcon('#2b4539', '🏭');
     const liveCaravanIcon = createIcon('#ef4444', '🚐');
 
-    // Custom icon for Telos House using PNG logo
+    // Custom icon for original Telos House (larger) using PNG logo
+    const telosHouseIconOriginal = L.icon({
+      iconUrl: '/telos-house-logo.png',
+      iconSize: [56, 56],
+      iconAnchor: [28, 28],
+      popupAnchor: [0, -28],
+      className: 'telos-house-marker',
+    });
+
+    // Custom icon for other Telos House locations (smaller)
     const telosHouseIcon = L.icon({
       iconUrl: '/telos-house-logo.png',
-      iconSize: [48, 48],
-      iconAnchor: [24, 24],
-      popupAnchor: [0, -24],
+      iconSize: [40, 40],
+      iconAnchor: [20, 20],
+      popupAnchor: [0, -20],
       className: 'telos-house-marker',
     });
 
@@ -109,7 +118,11 @@ function GuildMap({
     properties.forEach((property) => {
       // Use custom icon based on property type
       let icon = propertyIcon;
-      if (property.id === 'prop-telos' || property.id === 'prop-telos-shenzhen') {
+      if (property.id === 'prop-telos') {
+        // Original Telos House in London - larger icon
+        icon = telosHouseIconOriginal;
+      } else if (property.id === 'prop-telos-shenzhen') {
+        // Other Telos House locations - smaller icon
         icon = telosHouseIcon;
       } else if (property.type === 'supplier') {
         icon = supplierIcon;
@@ -121,13 +134,17 @@ function GuildMap({
         .addTo(map)
         .bindPopup(`
           <div style="padding: 12px;">
-            <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #F6FAF6;">🏛️ ${property.name}</h3>
+            <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #F6FAF6;">${property.type === 'supplier' ? '🏭' : '🏛️'} ${property.name}</h3>
             <p style="margin: 4px 0; font-size: 13px; color: #ffffff;"><strong>Type:</strong> ${property.type.charAt(0).toUpperCase() + property.type.slice(1)}</p>
             ${property.description ? `<p style="margin: 4px 0; font-size: 13px; color: #ffffff;">${property.description}</p>` : ''}
             ${property.capacity ? `<p style="margin: 4px 0; font-size: 13px; color: #ffffff;"><strong>Capacity:</strong> ${property.capacity} members</p>` : ''}
             ${property.amenities && property.amenities.length > 0 ? `<p style="margin: 4px 0; font-size: 12px; color: #ffffff;">${property.amenities.join(' • ')}</p>` : ''}
           </div>
-        `);
+        `)
+        .bindTooltip(`<strong>${property.name}</strong>${property.id === 'prop-telos' ? '<br/>(Original HQ)' : ''}`, {
+          permanent: false,
+          direction: 'top',
+        });
 
       if (onElementClick) {
         marker.on('click', () => onElementClick({ type: 'property', data: property }));
@@ -140,11 +157,11 @@ function GuildMap({
       const isPartnerVC = member.passportId.startsWith('VC-');
 
       if (isPartnerVC) {
-        // Use circle marker for VCs
+        // Use green circle marker for VCs matching color palette
         L.circleMarker([member.location.lat, member.location.lng], {
           radius: 12,
-          fillColor: '#F6FAF6',
-          color: '#3f6053',
+          fillColor: '#3f6053',
+          color: '#2b4539',
           weight: 3,
           opacity: 1,
           fillOpacity: 0.9,
@@ -158,6 +175,10 @@ function GuildMap({
               <p style="margin: 4px 0 0 0; font-size: 12px; color: #ffffff;">📍 ${member.location.name}</p>
             </div>
           `)
+          .bindTooltip(`<strong>${member.name}</strong><br/>${member.location.name}`, {
+            permanent: false,
+            direction: 'top',
+          })
           .on('click', () => {
             if (onElementClick) {
               onElementClick({ type: 'member', data: member });

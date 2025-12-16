@@ -47,6 +47,7 @@ export default function MapPage() {
   const [passportId, setPassportId] = useState<string>('');
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLegendOpen, setIsLegendOpen] = useState(true);
+  const [showMapOnMobile, setShowMapOnMobile] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -409,7 +410,8 @@ export default function MapPage() {
 
   return (
     <div className="flex flex-col md:flex-row h-screen overflow-hidden bg-[#000000]">
-      <div className="w-full md:w-96 lg:w-[28rem] md:flex-shrink-0 overflow-y-auto border-b md:border-b-0 md:border-r border-[#3f6053]/30 bg-[#000000] flex flex-col max-h-[40vh] md:max-h-none">
+      {/* Sidebar - hidden on mobile when map is shown */}
+      <div className={`w-full md:w-96 lg:w-[28rem] md:flex-shrink-0 overflow-y-auto border-b md:border-b-0 md:border-r border-[#3f6053]/30 bg-[#000000] flex flex-col ${showMapOnMobile ? 'hidden md:flex' : 'flex'} h-screen md:h-auto`}>
         <div className="p-6 border-b border-[#3f6053]/40 bg-[#000000]">
           <div className="mb-6 flex items-center justify-center">
             <div className="flex items-center gap-1 px-4 py-2">
@@ -495,9 +497,28 @@ export default function MapPage() {
           </h2>
           {renderInfoPanel()}
         </div>
+
+        {/* Mobile: Show Map Button */}
+        <div className="md:hidden p-4 border-t border-[#3f6053]/40 bg-[#000000]">
+          <button
+            onClick={() => setShowMapOnMobile(true)}
+            className="w-full py-3 bg-gradient-to-r from-[#3f6053] to-[#2b4539] hover:from-[#2b4539] hover:to-[#3f6053] text-white rounded-lg text-sm uppercase tracking-wide transition-all shadow-lg font-serif"
+          >
+            View Map
+          </button>
+        </div>
       </div>
 
-      <div className="flex-1 relative bg-[#000000]">
+      {/* Map container - hidden on mobile when filters are shown */}
+      <div className={`flex-1 relative bg-[#000000] ${showMapOnMobile ? 'block' : 'hidden md:block'}`}>
+        {/* Mobile: Back to Filters Button */}
+        <button
+          onClick={() => setShowMapOnMobile(false)}
+          className="md:hidden absolute top-4 left-4 z-[9998] bg-[#000000]/90 backdrop-blur-sm px-4 py-2 rounded-lg shadow-lg border border-[#3f6053]/50 text-white text-sm font-serif uppercase tracking-wide"
+        >
+          ← Filters
+        </button>
+
         <GuildMap
           caravans={activeFilters.includes('caravans') ? allCaravans : []}
           members={[
@@ -544,7 +565,7 @@ export default function MapPage() {
                   <span className="text-white/90">Telos House</span>
                 </div>
                 <div className="flex items-center gap-2.5">
-                  <div className="w-5 h-5 bg-[#F6FAF6]/90 rounded-full border-2 border-[#3f6053]"></div>
+                  <div className="w-5 h-5 bg-[#3f6053] rounded-full border-2 border-[#2b4539]"></div>
                   <span className="text-white/90">Partner VCs</span>
                 </div>
                 <div className="flex items-center gap-2.5">
