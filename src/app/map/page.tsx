@@ -94,17 +94,17 @@ export default function MapPage() {
     if (selectedElement.type === 'caravan') {
       const caravan = selectedElement.data as Caravan;
       return (
-        <div className="space-y-3 bg-gradient-to-br from-[#2b4539] to-[#3f6053] p-5 rounded-lg border-2 border-[#3f6053]/50"
+        <div className="space-y-3 bg-gradient-to-br from-[#2b4539] to-[#3f6053] p-5 rounded-lg border-2 border-[#3f6053]"
           style={{
             boxShadow: '0 8px 32px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.15)'
           }}
         >
           <div className="flex items-start justify-between">
-            <h3 className="font-serif text-lg text-white">{caravan.name}</h3>
-            <span className={`px-2 py-1 text-xs uppercase tracking-wide ${
-              caravan.status === 'live' ? 'bg-red-900/40 text-red-300' :
-              caravan.status === 'upcoming' ? 'bg-amber-900/40 text-amber-300' :
-              'bg-gray-800/40 text-gray-400'
+            <h3 className="font-serif text-lg text-[#F6FAF6]">{caravan.name}</h3>
+            <span className={`px-2 py-1 text-xs uppercase tracking-wide border ${
+              caravan.status === 'live' ? 'bg-[#3f6053]/40 text-[#F6FAF6] border-[#F6FAF6]/30' :
+              caravan.status === 'upcoming' ? 'bg-[#2b4539]/60 text-[#F6FAF6] border-[#F6FAF6]/30' :
+              'bg-[#000000]/40 text-[#ffffff]/80 border-[#3f6053]'
             }`}>
               {caravan.status}
             </span>
@@ -112,18 +112,18 @@ export default function MapPage() {
 
           <div className="space-y-2 text-sm">
             <div>
-              <span className="text-[#F6FAF6]">Route:</span>
-              <p className="text-white/90">{caravan.route.start.name} → {caravan.route.end.name}</p>
+              <span className="text-[#F6FAF6] font-semibold">Route:</span>
+              <p className="text-[#ffffff]/90">{caravan.route.start.name} → {caravan.route.end.name}</p>
             </div>
 
             {caravan.route.waypoints && caravan.route.waypoints.length > 0 && (
               <div>
-                <span className="text-[#F6FAF6]">Waypoints:</span>
-                <div className="mt-1 space-y-1">
+                <span className="text-[#F6FAF6] font-semibold">Waypoints:</span>
+                <div className="mt-1 space-y-1 max-h-32 overflow-y-auto">
                   {caravan.route.waypoints.map((waypoint, index) => (
                     <div key={index} className="flex items-center gap-2 text-xs">
-                      <span className="text-[#F6FAF6]">{index + 1}.</span>
-                      <span className="text-white/90">{waypoint.name}</span>
+                      <span className="text-[#F6FAF6]/80">{index + 1}.</span>
+                      <span className="text-[#ffffff]/90">{waypoint.name}</span>
                     </div>
                   ))}
                 </div>
@@ -132,20 +132,20 @@ export default function MapPage() {
 
             {caravan.description && (
               <div>
-                <span className="text-[#F6FAF6]">Description:</span>
-                <p className="text-white/80 italic">{caravan.description}</p>
+                <span className="text-[#F6FAF6] font-semibold">Description:</span>
+                <p className="text-[#ffffff]/80 italic">{caravan.description}</p>
               </div>
             )}
 
             <div className="grid grid-cols-2 gap-2 pt-2">
-              <div>
-                <span className="text-[#F6FAF6] text-xs">⚑ Waypoints:</span>
-                <p className="text-white">{caravan.stops.length}</p>
+              <div className="bg-[#000000]/20 p-2 rounded border border-[#3f6053]/30">
+                <span className="text-[#F6FAF6]/70 text-xs">⚑ Waypoints</span>
+                <p className="text-[#F6FAF6] font-semibold">{caravan.stops.length}</p>
               </div>
               {caravan.participants > 0 && (
-                <div>
-                  <span className="text-[#F6FAF6] text-xs">⚒ Participants:</span>
-                  <p className="text-white">{caravan.participants}</p>
+                <div className="bg-[#000000]/20 p-2 rounded border border-[#3f6053]/30">
+                  <span className="text-[#F6FAF6]/70 text-xs">⚒ Participants</span>
+                  <p className="text-[#F6FAF6] font-semibold">{caravan.participants}</p>
                 </div>
               )}
             </div>
@@ -153,19 +153,29 @@ export default function MapPage() {
             {((caravan.boats && caravan.boats > 0) || (caravan.horses && caravan.horses > 0)) && (
               <div className="grid grid-cols-2 gap-2">
                 {caravan.boats && caravan.boats > 0 && (
-                  <div>
-                    <span className="text-[#F6FAF6] text-xs">⚓ Boats:</span>
-                    <p className="text-white">{caravan.boats}</p>
+                  <div className="bg-[#000000]/20 p-2 rounded border border-[#3f6053]/30">
+                    <span className="text-[#F6FAF6]/70 text-xs">⚓ Boats</span>
+                    <p className="text-[#F6FAF6] font-semibold">{caravan.boats}</p>
                   </div>
                 )}
                 {caravan.horses && caravan.horses > 0 && (
-                  <div>
-                    <span className="text-[#F6FAF6] text-xs">🐴 Horses:</span>
-                    <p className="text-white">{caravan.horses}</p>
+                  <div className="bg-[#000000]/20 p-2 rounded border border-[#3f6053]/30">
+                    <span className="text-[#F6FAF6]/70 text-xs">🐴 Horses</span>
+                    <p className="text-[#F6FAF6] font-semibold">{caravan.horses}</p>
                   </div>
                 )}
               </div>
             )}
+          </div>
+
+          <div className="pt-3 border-t border-[#3f6053]/30">
+            <a
+              href={`/contribute?project=${encodeURIComponent(caravan.name)}`}
+              target="_blank"
+              className="block w-full py-2.5 px-4 bg-gradient-to-r from-[#F6FAF6] to-[#ffffff] text-[#2b4539] text-center rounded font-semibold text-sm uppercase tracking-wide hover:shadow-lg transition-all"
+            >
+              Contribute
+            </a>
           </div>
         </div>
       );
@@ -231,6 +241,16 @@ export default function MapPage() {
                 </div>
               )}
             </div>
+
+            <div className="pt-3 border-t-2 border-[#C4B89D]">
+              <a
+                href={`/contribute?project=${encodeURIComponent(property.name)}`}
+                target="_blank"
+                className="block w-full py-2.5 px-4 bg-gradient-to-r from-[#F6FAF6] to-[#ffffff] text-[#2b4539] text-center rounded font-semibold text-sm uppercase tracking-wide hover:shadow-lg transition-all"
+              >
+                Contribute
+              </a>
+            </div>
           </div>
         );
       }
@@ -280,6 +300,16 @@ export default function MapPage() {
                 </div>
               </div>
             )}
+          </div>
+
+          <div className="pt-3 border-t border-[#3f6053]/30">
+            <a
+              href={`/contribute?project=${encodeURIComponent(property.name)}`}
+              target="_blank"
+              className="block w-full py-2.5 px-4 bg-gradient-to-r from-[#F6FAF6] to-[#ffffff] text-[#2b4539] text-center rounded font-semibold text-sm uppercase tracking-wide hover:shadow-lg transition-all"
+            >
+              Contribute
+            </a>
           </div>
         </div>
       );
@@ -529,6 +559,7 @@ export default function MapPage() {
             ...(activeFilters.includes('suppliers') ? supplierLinks : []),
           ]}
           selectedCaravan={null}
+          selectedElement={selectedElement}
           onElementClick={(element) => setSelectedElement(element)}
         />
 

@@ -10,6 +10,7 @@ interface GuildMapProps {
   members: GuildMember[];
   properties: Property[];
   selectedCaravan?: Caravan | null;
+  selectedElement?: { type: 'caravan' | 'member' | 'property'; data: Caravan | GuildMember | Property } | null;
   onElementClick?: (element: { type: 'caravan' | 'member' | 'property'; data: Caravan | GuildMember | Property }) => void;
 }
 
@@ -18,6 +19,7 @@ function GuildMap({
   members,
   properties,
   selectedCaravan,
+  selectedElement,
   onElementClick,
 }: GuildMapProps) {
   const mapRef = useRef<L.Map | null>(null);
@@ -45,7 +47,7 @@ function GuildMap({
     const style = document.createElement('style');
     style.innerHTML = `
       .leaflet-tile-container {
-        filter: saturate(1.2) brightness(0.85) contrast(1.1) hue-rotate(140deg);
+        filter: saturate(1.1) brightness(0.5) contrast(1.3) hue-rotate(140deg) sepia(0.2);
       }
       .leaflet-popup-content-wrapper {
         background: linear-gradient(135deg, #2b4539, #3f6053);
@@ -66,6 +68,9 @@ function GuildMap({
       }
       .telos-house-marker {
         filter: drop-shadow(0 0 2px black) drop-shadow(0 0 1px black);
+      }
+      .telos-house-shenzhen {
+        filter: drop-shadow(0 0 3px #3f6053) drop-shadow(0 0 6px #3f6053) drop-shadow(0 0 2px black);
       }
     `;
     document.head.appendChild(style);
@@ -105,13 +110,21 @@ function GuildMap({
       className: 'telos-house-marker',
     });
 
-    // Custom icon for other Telos House locations (smaller)
+    // Custom icon for other Telos House locations (smaller with blue tint for Shenzhen)
     const telosHouseIcon = L.icon({
       iconUrl: '/telos-house-logo.png',
       iconSize: [40, 40],
       iconAnchor: [20, 20],
       popupAnchor: [0, -20],
       className: 'telos-house-marker',
+    });
+
+    const telosHouseShenzhenIcon = L.icon({
+      iconUrl: '/telos-house-logo.png',
+      iconSize: [40, 40],
+      iconAnchor: [20, 20],
+      popupAnchor: [0, -20],
+      className: 'telos-house-marker telos-house-shenzhen',
     });
 
     // Add properties
@@ -122,8 +135,8 @@ function GuildMap({
         // Original Telos House in London - larger icon
         icon = telosHouseIconOriginal;
       } else if (property.id === 'prop-telos-shenzhen') {
-        // Other Telos House locations - smaller icon
-        icon = telosHouseIcon;
+        // Shenzhen Telos House - smaller icon with green glow
+        icon = telosHouseShenzhenIcon;
       } else if (property.type === 'supplier') {
         icon = supplierIcon;
       }
@@ -139,6 +152,7 @@ function GuildMap({
             ${property.description ? `<p style="margin: 4px 0; font-size: 13px; color: #ffffff;">${property.description}</p>` : ''}
             ${property.capacity ? `<p style="margin: 4px 0; font-size: 13px; color: #ffffff;"><strong>Capacity:</strong> ${property.capacity} members</p>` : ''}
             ${property.amenities && property.amenities.length > 0 ? `<p style="margin: 4px 0; font-size: 12px; color: #ffffff;">${property.amenities.join(' • ')}</p>` : ''}
+            <a href="/contribute?project=${encodeURIComponent(property.name)}" target="_blank" style="display: inline-block; margin-top: 12px; padding: 8px 16px; background: linear-gradient(135deg, #F6FAF6, #C4B89D); color: #2b4539; text-decoration: none; border-radius: 4px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: all 0.2s;">Contribute</a>
           </div>
         `)
         .bindTooltip(`<strong>${property.name}</strong>${property.id === 'prop-telos' ? '<br/>(Original HQ)' : ''}`, {
@@ -159,10 +173,10 @@ function GuildMap({
       if (isPartnerVC) {
         // Use green circle marker for VCs matching color palette
         L.circleMarker([member.location.lat, member.location.lng], {
-          radius: 12,
+          radius: 8,
           fillColor: '#3f6053',
           color: '#2b4539',
-          weight: 3,
+          weight: 2,
           opacity: 1,
           fillOpacity: 0.9,
         })
@@ -301,6 +315,7 @@ function GuildMap({
             ${caravan.participants > 0 ? `<p style="margin: 4px 0; font-size: 13px; color: #ffffff;"><strong>Participants:</strong> ${caravan.participants}</p>` : ''}
             ${caravan.boats && caravan.boats > 0 ? `<p style="margin: 4px 0; font-size: 13px; color: #ffffff;">⛵ ${caravan.boats} Boats • 🐴 ${caravan.horses || 0} Horses</p>` : ''}
             ${caravan.stops && caravan.stops.length > 0 ? `<p style="margin: 4px 0; font-size: 13px; color: #ffffff;">⚑ ${caravan.stops.length} Waypoints</p>` : ''}
+            <a href="/contribute?project=${encodeURIComponent(caravan.name)}" target="_blank" style="display: inline-block; margin-top: 12px; padding: 8px 16px; background: linear-gradient(135deg, #F6FAF6, #C4B89D); color: #2b4539; text-decoration: none; border-radius: 4px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: all 0.2s;">Contribute</a>
           </div>
         `);
 
@@ -400,6 +415,33 @@ function GuildMap({
     const bounds = L.latLngBounds(routePoints);
     mapRef.current.fitBounds(bounds, { padding: [50, 50] });
   }, [selectedCaravan]);
+
+  // Handle selected element (zoom to element)
+  useEffect(() => {
+    if (!mapRef.current || !selectedElement) return;
+
+    if (selectedElement.type === 'caravan') {
+      const caravan = selectedElement.data as Caravan;
+      const routePoints = caravan.route.waypoints.map((wp) => [
+        wp.lat,
+        wp.lng,
+      ]) as [number, number][];
+      const bounds = L.latLngBounds(routePoints);
+      mapRef.current.fitBounds(bounds, { padding: [50, 50] });
+    } else if (selectedElement.type === 'property') {
+      const property = selectedElement.data as Property;
+      mapRef.current.setView([property.location.lat, property.location.lng], 12, {
+        animate: true,
+        duration: 0.5,
+      });
+    } else if (selectedElement.type === 'member') {
+      const member = selectedElement.data as GuildMember;
+      mapRef.current.setView([member.location.lat, member.location.lng], 10, {
+        animate: true,
+        duration: 0.5,
+      });
+    }
+  }, [selectedElement]);
 
   return (
     <div
