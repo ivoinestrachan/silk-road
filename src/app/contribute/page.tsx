@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function ContributePage() {
+function ContributeForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const projectName = searchParams.get('project') || '';
@@ -212,5 +212,17 @@ export default function ContributePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ContributePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#000000] flex items-center justify-center">
+        <div className="text-white/70">Loading...</div>
+      </div>
+    }>
+      <ContributeForm />
+    </Suspense>
   );
 }
