@@ -19,6 +19,7 @@ export default function AdminPage() {
     type: 'caravan',
     name: '',
     description: '',
+    address: '',
     location: { lat: '', lng: '', name: '' },
   });
 
@@ -48,6 +49,7 @@ export default function AdminPage() {
       type: 'caravan',
       name: '',
       description: '',
+      address: '',
       location: { lat: '', lng: '', name: '' },
     });
   };
@@ -61,7 +63,7 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a1a1a] p-6">
+    <div className="min-h-screen bg-[#0a1a1a] p-6 overflow-auto">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -145,7 +147,7 @@ export default function AdminPage() {
             </div>
           </div>
         ) : (
-          <div className="bg-gradient-to-br from-[#0d2626] to-[#0a1f1f] rounded-lg border border-teal-800/40 p-6">
+          <div className="bg-gradient-to-br from-[#0d2626] to-[#0a1f1f] rounded-lg border border-teal-800/40 p-6 pb-24">
             <h2 className="text-xl font-serif text-teal-100 mb-4">Add New Map Element</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
@@ -191,6 +193,57 @@ export default function AdminPage() {
                   rows={4}
                   className="w-full px-4 py-3 bg-[#0a1a1a]/80 border border-teal-700/40 rounded text-teal-100 placeholder-teal-700/50 focus:outline-none focus:ring-2 focus:ring-teal-500/50"
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm text-teal-300/90 mb-2 uppercase tracking-wide">
+                  Address
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newElement.address || ''}
+                    onChange={(e) => setNewElement({ ...newElement, address: e.target.value })}
+                    placeholder="Enter address (e.g., 123 Main St, New York, NY)"
+                    className="flex-1 px-4 py-3 bg-[#0a1a1a]/80 border border-teal-700/40 rounded text-teal-100 placeholder-teal-700/50 focus:outline-none focus:ring-2 focus:ring-teal-500/50"
+                  />
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (!newElement.address) {
+                        alert('Please enter an address');
+                        return;
+                      }
+                      try {
+                        const response = await fetch(
+                          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(newElement.address)}.json?access_token=${process.env.NEXT_PUBLIC_MAPBOX_TOKEN}`
+                        );
+                        const data = await response.json();
+                        if (data.features && data.features.length > 0) {
+                          const [lng, lat] = data.features[0].center;
+                          const placeName = data.features[0].place_name;
+                          setNewElement({
+                            ...newElement,
+                            location: {
+                              lat: lat.toString(),
+                              lng: lng.toString(),
+                              name: placeName.split(',')[0] || placeName
+                            }
+                          });
+                          alert('Location found and coordinates updated!');
+                        } else {
+                          alert('Address not found. Please try a different address.');
+                        }
+                      } catch (error) {
+                        console.error('Geocoding error:', error);
+                        alert('Error finding address. Please enter coordinates manually.');
+                      }
+                    }}
+                    className="px-6 py-3 bg-teal-700/50 hover:bg-teal-700 text-teal-100 rounded transition-all"
+                  >
+                    Find
+                  </button>
+                </div>
               </div>
 
               <div className="grid grid-cols-3 gap-4">

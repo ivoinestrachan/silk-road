@@ -5,58 +5,58 @@ export const slushCaravan: Caravan = {
   name: 'Slush Caravan 2025',
   status: 'completed',
   route: {
-    start: { lat: 51.5074, lng: -0.1278, name: 'London' },
+    start: { lat: 51.5306, lng: -0.1239, name: 'Kings Cross, London' },
     end: { lat: 60.1699, lng: 24.9384, name: 'Helsinki' },
     waypoints: [
-      { lat: 51.5074, lng: -0.1278, name: 'London' },
-      { lat: 51.2194, lng: 4.4025, name: 'Antwerp, Belgium' },
-      { lat: 52.5200, lng: 13.4050, name: 'Berlin, Germany' },
-      { lat: 52.2297, lng: 21.0122, name: 'Warsaw, Poland' },
-      { lat: 56.9496, lng: 24.1052, name: 'Riga, Latvia' },
-      { lat: 59.4370, lng: 24.7536, name: 'Tallinn, Estonia' }, // Added to avoid water crossing
-      { lat: 60.1699, lng: 24.9384, name: 'Helsinki, Finland' },
+      { lat: 51.5306, lng: -0.1239, name: 'Kings Cross, London' },
+      { lat: 51.2194, lng: 4.4025, name: 'Antwerp' },
+      { lat: 52.5200, lng: 13.4050, name: 'Berlin' },
+      { lat: 52.2297, lng: 21.0122, name: 'Warsaw' },
+      { lat: 56.9496, lng: 24.1052, name: 'Riga' },
+      { lat: 59.4370, lng: 24.7536, name: 'Tallinn' },
+      { lat: 60.1699, lng: 24.9384, name: 'Helsinki' },
     ],
   },
   stops: [
     {
-      location: { lat: 51.5074, lng: -0.1278, name: 'London' },
+      location: { lat: 51.5306, lng: -0.1239, name: 'Kings Cross, London' },
       arrivalDate: '2025-11-15',
       departureDate: '2025-11-16',
-      description: 'Starting point - Kings Cross gathering',
+      description: 'Starting point - Telos HQ gathering',
     },
     {
-      location: { lat: 51.2194, lng: 4.4025, name: 'Antwerp, Belgium' },
+      location: { lat: 51.2194, lng: 4.4025, name: 'Antwerp' },
       arrivalDate: '2025-11-16',
       departureDate: '2025-11-17',
       description: 'Historic Hanseatic trading city',
     },
     {
-      location: { lat: 52.5200, lng: 13.4050, name: 'Berlin, Germany' },
+      location: { lat: 52.5200, lng: 13.4050, name: 'Berlin' },
       arrivalDate: '2025-11-17',
       departureDate: '2025-11-18',
       description: 'German capital stopover',
     },
     {
-      location: { lat: 52.2297, lng: 21.0122, name: 'Warsaw, Poland' },
+      location: { lat: 52.2297, lng: 21.0122, name: 'Warsaw' },
       arrivalDate: '2025-11-18',
       departureDate: '2025-11-19',
       description: 'Polish capital visit',
     },
     {
-      location: { lat: 56.9496, lng: 24.1052, name: 'Riga, Latvia' },
+      location: { lat: 56.9496, lng: 24.1052, name: 'Riga' },
       arrivalDate: '2025-11-19',
-      departureDate: '2025-11-19',
+      departureDate: '2025-11-20',
       description: 'Baltic hub',
     },
     {
-      location: { lat: 59.4370, lng: 24.7536, name: 'Tallinn, Estonia' },
-      arrivalDate: '2025-11-19',
-      departureDate: '2025-11-20',
+      location: { lat: 59.4370, lng: 24.7536, name: 'Tallinn' },
+      arrivalDate: '2025-11-20',
+      departureDate: '2025-11-21',
       description: 'Estonian capital before ferry to Helsinki',
     },
     {
-      location: { lat: 60.1699, lng: 24.9384, name: 'Helsinki, Finland' },
-      arrivalDate: '2025-11-20',
+      location: { lat: 60.1699, lng: 24.9384, name: 'Helsinki' },
+      arrivalDate: '2025-11-21',
       departureDate: '2025-11-23',
       description: 'Slush Conference destination',
     },
@@ -81,11 +81,10 @@ export const davosCaravan: Caravan = {
   name: 'Davos Caravan 2026',
   status: 'upcoming',
   route: {
-    start: { lat: 51.5074, lng: -0.1278, name: 'London' },
+    start: { lat: 51.5306, lng: -0.1239, name: 'Kings Cross, London' },
     end: { lat: 46.8092, lng: 9.8358, name: 'Davos' },
     waypoints: [
-      { lat: 51.5074, lng: -0.1278, name: 'London' },
-      { lat: 50.8503, lng: 4.3517, name: 'Brussels' },
+      { lat: 51.5306, lng: -0.1239, name: 'Kings Cross, London' },
       { lat: 48.8566, lng: 2.3522, name: 'Paris' },
       { lat: 47.3769, lng: 8.5417, name: 'Zurich' },
       { lat: 46.8092, lng: 9.8358, name: 'Davos' },
@@ -93,33 +92,27 @@ export const davosCaravan: Caravan = {
   },
   stops: [
     {
-      location: { lat: 51.5074, lng: -0.1278, name: 'London' },
+      location: { lat: 51.5306, lng: -0.1239, name: 'Kings Cross, London' },
       arrivalDate: '2026-01-16',
       departureDate: '2026-01-17',
-      description: 'Starting point - Kings Cross gathering',
-    },
-    {
-      location: { lat: 50.8503, lng: 4.3517, name: 'Brussels' },
-      arrivalDate: '2026-01-17',
-      departureDate: '2026-01-18',
-      description: 'EU hub stopover',
+      description: 'Starting point - Telos HQ',
     },
     {
       location: { lat: 48.8566, lng: 2.3522, name: 'Paris' },
-      arrivalDate: '2026-01-18',
-      departureDate: '2026-01-19',
+      arrivalDate: '2026-01-17',
+      departureDate: '2026-01-18',
       description: 'Cultural exchange in Paris',
     },
     {
       location: { lat: 47.3769, lng: 8.5417, name: 'Zurich' },
-      arrivalDate: '2026-01-19',
-      departureDate: '2026-01-20',
+      arrivalDate: '2026-01-18',
+      departureDate: '2026-01-19',
       description: 'Swiss financial hub',
     },
     {
       location: { lat: 46.8092, lng: 9.8358, name: 'Davos' },
-      arrivalDate: '2026-01-20',
-      departureDate: '2026-01-24',
+      arrivalDate: '2026-01-19',
+      departureDate: '2026-01-23',
       description: 'World Economic Forum',
     },
   ],
@@ -131,7 +124,64 @@ export const davosCaravan: Caravan = {
   description: 'Journey to the World Economic Forum in Davos, Switzerland',
 };
 
-export const allCaravans = [davosCaravan, slushCaravan];
+export const liveEventCaravan: Caravan = {
+  id: 'florence-live-2025',
+  name: 'Florence Innovation Week',
+  status: 'live',
+  route: {
+    start: { lat: 43.7696, lng: 11.2558, name: 'Florence' },
+    end: { lat: 43.7696, lng: 11.2558, name: 'Florence' },
+    waypoints: [
+      { lat: 43.7696, lng: 11.2558, name: 'Florence' },
+    ],
+  },
+  stops: [
+    {
+      location: { lat: 43.7696, lng: 11.2558, name: 'Florence' },
+      arrivalDate: '2025-12-18',
+      departureDate: '2025-12-22',
+      description: 'Florence Innovation Week - Renaissance meets Tech',
+    },
+  ],
+  currentLocation: { lat: 43.7696, lng: 11.2558, name: 'Florence, Italy' },
+  participants: 25,
+  vehicles: 0,
+  boats: 0,
+  horses: 0,
+  startDate: '2025-12-18',
+  endDate: '2025-12-22',
+  description: 'Live event in Florence - Innovation Week combining Renaissance culture with modern technology',
+};
+
+export const sfStartupCohort: Caravan = {
+  id: 'sf-startup-cohort-2026',
+  name: 'SF Startup Cohort',
+  status: 'upcoming',
+  route: {
+    start: { lat: 37.7749, lng: -122.4194, name: 'San Francisco' },
+    end: { lat: 37.7749, lng: -122.4194, name: 'San Francisco' },
+    waypoints: [
+      { lat: 37.7749, lng: -122.4194, name: 'San Francisco' },
+    ],
+  },
+  stops: [
+    {
+      location: { lat: 37.7749, lng: -122.4194, name: 'San Francisco' },
+      arrivalDate: '2026-03-01',
+      departureDate: '2026-06-01',
+      description: 'San Francisco Startup Accelerator Program',
+    },
+  ],
+  participants: 0,
+  vehicles: 0,
+  boats: 0,
+  horses: 0,
+  startDate: '2026-03-01',
+  endDate: '2026-06-01',
+  description: 'Three-month startup accelerator program in San Francisco for early-stage founders',
+};
+
+export const allCaravans = [liveEventCaravan, sfStartupCohort, davosCaravan, slushCaravan];
 
 export const guildMembers: GuildMember[] = [
   {
@@ -210,11 +260,20 @@ export const properties: Property[] = [
     amenities: ['Coworking', 'Kitchen', 'Event Space'],
   },
   {
+    id: 'prop-telos-sf',
+    name: 'Telos House SF',
+    type: 'house',
+    location: { lat: 37.7749, lng: -122.4194, name: 'San Francisco, CA' },
+    description: 'Silicon Valley innovation hub and startup accelerator',
+    capacity: 25,
+    amenities: ['Coworking', 'Pitch Room', 'Maker Space', 'Demo Lab'],
+  },
+  {
     id: 'prop-telos-shenzhen',
     name: 'Telos House Shenzhen',
     type: 'house',
     location: { lat: 22.5390, lng: 114.0550, name: 'Shenzhen, China' },
-    description: 'Asia-Pacific hub and innovation center',
+    description: 'Asia-Pacific hub and innovation center [UPCOMING]',
     capacity: 15,
     amenities: ['Coworking', 'Hardware Lab', 'Manufacturing Access'],
   },
