@@ -41,27 +41,10 @@ function GuildMap({
 
     console.log('Initializing Mapbox map...');
 
-    // Initialize Mapbox map with OpenStreetMap as base
+    // Initialize Mapbox map with dark vector style for custom layering
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,
-      style: {
-        version: 8,
-        sources: {
-          'osm-tiles': {
-            type: 'raster',
-            tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-            tileSize: 256,
-            attribution: '© OpenStreetMap contributors',
-          },
-        },
-        layers: [
-          {
-            id: 'osm-layer',
-            type: 'raster',
-            source: 'osm-tiles',
-          },
-        ],
-      },
+      style: 'mapbox://styles/mapbox/dark-v11', // Dark vector style for monochrome base
       center: [13.405, 52.52],
       zoom: 4.5,
       pitch: 0,
@@ -84,7 +67,54 @@ function GuildMap({
     });
 
     map.on('load', () => {
-      // 1. Add DEM source for terrain and hillshade
+      // Customize base vector layers for monochrome terrain look
+      // Remove or dim unwanted layers
+      const style = map.getStyle();
+
+      // Dark green water
+      if (map.getLayer('water')) {
+        map.setPaintProperty('water', 'fill-color', '#0d1f1a');
+      }
+
+      // Style land areas with subtle gray-green tones
+      if (map.getLayer('land')) {
+        map.setPaintProperty('land', 'background-color', '#1a1f1d');
+      }
+
+      // Dim administrative boundaries
+      style.layers.forEach((layer) => {
+        if (layer.id.includes('admin') || layer.id.includes('boundary')) {
+          map.setPaintProperty(layer.id, 'line-opacity', 0.2);
+        }
+
+        // Remove road labels and POIs for cleaner look
+        if (layer.id.includes('label') || layer.id.includes('poi')) {
+          map.setLayoutProperty(layer.id, 'visibility', 'none');
+        }
+      });
+
+      // Add satellite imagery source
+      map.addSource('mapbox-satellite', {
+        type: 'raster',
+        url: 'mapbox://mapbox.satellite',
+        tileSize: 256,
+      });
+
+      // Add satellite layer as base imagery
+      map.addLayer({
+        id: 'satellite',
+        type: 'raster',
+        source: 'mapbox-satellite',
+        paint: {
+          'raster-opacity': 0.6, // Slightly transparent for blending
+          'raster-saturation': -1, // Full grayscale (-1 = completely desaturated)
+          'raster-contrast': 0.3, // Increase contrast for better terrain definition
+          'raster-brightness-min': 0.1, // Darken shadows
+          'raster-brightness-max': 0.8, // Dim highlights for monochrome look
+        },
+      }, 'waterway-label'); // Add before labels
+
+      // Add DEM source for 3D terrain
       map.addSource('mapbox-dem', {
         type: 'raster-dem',
         url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
@@ -92,79 +122,22 @@ function GuildMap({
         maxzoom: 14,
       });
 
-      // 2. Enable 3D terrain (critical for texture)
-      map.setTerrain({ source: 'mapbox-dem', exaggeration: 1.5 });
+      // Enable 3D terrain with stronger exaggeration for dramatic relief
+      map.setTerrain({ source: 'mapbox-dem', exaggeration: 2.0 });
 
-      // 3. Add vector source for water/land overlays
-      map.addSource('mapbox-terrain-vector', {
-        type: 'vector',
-        url: 'mapbox://mapbox.mapbox-streets-v8',
-      });
-
-      // 4. Add water tint overlay (pure black with green tint)
-      map.addLayer({
-        id: 'water-tint',
-        type: 'fill',
-        source: 'mapbox-terrain-vector',
-        'source-layer': 'water',
-        paint: {
-          'fill-color': '#0a1410', // Very dark black-green
-          'fill-opacity': 0.95, // Almost fully opaque for pure black appearance
-        },
-      });
-
-
-      // 6. Add strong hillshade for dramatic relief texture
+      // Add hillshade layer for monochromatic terrain depth
       map.addLayer({
         id: 'hillshade',
         type: 'hillshade',
         source: 'mapbox-dem',
         paint: {
-          'hillshade-exaggeration': 3.0, // Very strong exaggeration for pronounced texture
-          'hillshade-shadow-color': '#000000', // Pure black shadows
-          'hillshade-highlight-color': '#ffffff', // Pure white highlights
+          'hillshade-exaggeration': 1.2,
+          'hillshade-shadow-color': '#000000',
+          'hillshade-highlight-color': '#4a5a4d',
           'hillshade-illumination-direction': 315,
-          'hillshade-illumination-anchor': 'viewport',
+          'hillshade-accent-color': '#2a3a2d',
         },
       });
-
-      // Add grain texture overlay using image source
-      const canvas = document.createElement('canvas');
-      canvas.width = 256;
-      canvas.height = 256;
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        const imageData = ctx.createImageData(256, 256);
-        for (let i = 0; i < imageData.data.length; i += 4) {
-          const noise = Math.random() * 30;
-          imageData.data[i] = noise;
-          imageData.data[i + 1] = noise;
-          imageData.data[i + 2] = noise;
-          imageData.data[i + 3] = 25;
-        }
-        ctx.putImageData(imageData, 0, 0);
-
-        (map as any).addSource('grain-overlay', {
-          type: 'canvas',
-          canvas: canvas,
-          coordinates: [
-            [-180, 85],
-            [180, 85],
-            [180, -85],
-            [-180, -85]
-          ],
-          animate: false
-        });
-
-        map.addLayer({
-          id: 'grain-layer',
-          type: 'raster',
-          source: 'grain-overlay',
-          paint: {
-            'raster-opacity': 0.15
-          }
-        });
-      }
 
       // Add navigation controls
       map.addControl(new mapboxgl.NavigationControl(), 'top-right');
@@ -320,22 +293,36 @@ function GuildMap({
 
     // Helper function to create clean white circle nodes (6-8px)
     const createIconMarker = (locationName: string = '') => {
-      const el = document.createElement('div');
-      el.style.width = '8px';
-      el.style.height = '8px';
-      el.style.borderRadius = '50%';
-      el.style.backgroundColor = '#ffffff'; // Clean white circles
-      el.style.cursor = 'pointer';
-      el.style.transition = 'transform 0.2s';
-      el.style.position = 'relative'; // Prevent position shifts
-      el.title = locationName; // Hover shows location
-      el.addEventListener('mouseenter', () => {
-        el.style.transform = 'scale(1.5)';
+      // Wrapper container with fixed size to prevent marker anchor shifts
+      const container = document.createElement('div');
+      container.style.width = '12px'; // Fixed container size
+      container.style.height = '12px';
+      container.style.display = 'flex';
+      container.style.alignItems = 'center';
+      container.style.justifyContent = 'center';
+      container.style.cursor = 'pointer';
+      container.title = locationName; // Hover shows location
+
+      // Inner circle that scales
+      const circle = document.createElement('div');
+      circle.style.width = '8px';
+      circle.style.height = '8px';
+      circle.style.borderRadius = '50%';
+      circle.style.backgroundColor = '#ffffff'; // Clean white circles
+      circle.style.transition = 'transform 0.2s';
+      circle.style.transformOrigin = 'center center';
+      circle.style.willChange = 'transform';
+
+      container.appendChild(circle);
+
+      container.addEventListener('mouseenter', () => {
+        circle.style.transform = 'scale(1.5)';
       });
-      el.addEventListener('mouseleave', () => {
-        el.style.transform = 'scale(1)';
+      container.addEventListener('mouseleave', () => {
+        circle.style.transform = 'scale(1)';
       });
-      return el;
+
+      return container;
     };
 
     // Add properties
@@ -566,9 +553,9 @@ function GuildMap({
         return el;
       };
 
-      // Add start marker with pin
+      // Add start marker with pin (red)
       const startMarker = new mapboxgl.Marker({
-        element: createPinMarker('#10b981'),
+        element: createPinMarker('#ef4444'),
         anchor: 'bottom',
       })
         .setLngLat([caravan.route.start.lng, caravan.route.start.lat])
@@ -601,19 +588,38 @@ function GuildMap({
           return;
         }
 
+        const popup = new mapboxgl.Popup({
+          offset: 15,
+          closeButton: false,
+          closeOnClick: false,
+          className: 'custom-popup'
+        }).setHTML(`
+          <div style="padding: 8px; background: linear-gradient(135deg, #2b4539, #3f6053); border-radius: 6px;">
+            <p style="margin: 0; font-size: 12px; color: #F6FAF6; font-weight: 600;">${waypoint.name}</p>
+            <p style="margin: 2px 0 0 0; font-size: 10px; color: #ffffff/80;">Route waypoint ${index}</p>
+          </div>
+        `);
+
         const waypointDot = new mapboxgl.Marker({
           element: createIconMarker(waypoint.name || 'Stop'),
           anchor: 'center',
         })
           .setLngLat([waypoint.lng, waypoint.lat])
-          .setPopup(
-            new mapboxgl.Popup({ offset: 15 })
-              .setHTML(`<strong style="color: #F6FAF6;">Stop:</strong> <span style="color: #ffffff;">${waypoint.name}</span>`)
-          )
           .addTo(map);
 
-        // Add click handler for photo gallery
+        // Show popup on hover
         const markerEl = waypointDot.getElement();
+        markerEl.addEventListener('mouseenter', () => {
+          popup.addTo(map);
+          waypointDot.setPopup(popup);
+          popup.addTo(map);
+        });
+
+        markerEl.addEventListener('mouseleave', () => {
+          popup.remove();
+        });
+
+        // Add click handler for photo gallery
         markerEl.addEventListener('click', () => {
           if (onElementClick) {
             onElementClick({ type: 'caravan', data: caravan });
@@ -756,21 +762,6 @@ function GuildMap({
           left: 0 !important;
           width: 100% !important;
           height: 100% !important;
-          filter: contrast(1.2) grayscale(0.7) brightness(1.3) !important; /* Monochrome effect with brightness boost */
-        }
-
-        /* Monochrome overlay for landmass effect */
-        .mapboxgl-canvas-container::after {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background-color: #c8c8c8;
-          opacity: 0.3;
-          pointer-events: none;
-          mix-blend-mode: lighten;
         }
       `}</style>
       <div
@@ -779,7 +770,6 @@ function GuildMap({
         style={{
           minHeight: '500px',
           position: 'relative',
-          filter: 'contrast(1.2)', // Contrast boost
         }}
       />
     </>
