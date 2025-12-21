@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, memo } from 'react';
+import { useEffect, useRef, memo, useCallback } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { Caravan, GuildMember, Property } from '@/types/guild';
 
@@ -16,6 +16,9 @@ interface GuildMapProps {
   selectedElement?: { type: 'caravan' | 'member' | 'property'; data: Caravan | GuildMember | Property } | null;
   onElementClick?: (element: { type: 'caravan' | 'member' | 'property'; data: Caravan | GuildMember | Property; clickX?: number; clickY?: number }) => void;
   isAuthenticated?: boolean;
+  isModalOpen?: boolean;
+  onMapLoaded?: () => void;
+  onZoomControlsReady?: (controls: { zoomIn: () => void; zoomOut: () => void; resetView: () => void }) => void;
 }
 
 function GuildMap({
@@ -25,6 +28,9 @@ function GuildMap({
   selectedCaravan,
   selectedElement,
   onElementClick,
+  isModalOpen = false,
+  onMapLoaded,
+  onZoomControlsReady,
 }: GuildMapProps) {
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -63,19 +69,19 @@ function GuildMap({
   }, []);
 
   // Helper to show tooltip
-  const showTooltip = (text: string, x: number, y: number) => {
+  const showTooltip = useCallback((text: string, x: number, y: number) => {
     if (!tooltipRef.current) return;
     tooltipRef.current.innerHTML = text;
     tooltipRef.current.style.left = `${x + 15}px`;
     tooltipRef.current.style.top = `${y - 10}px`;
     tooltipRef.current.style.opacity = '1';
-  };
+  }, []);
 
   // Helper to hide tooltip
-  const hideTooltip = () => {
+  const hideTooltip = useCallback(() => {
     if (!tooltipRef.current) return;
     tooltipRef.current.style.opacity = '0';
-  };
+  }, []);
 
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
@@ -99,6 +105,9 @@ function GuildMap({
       antialias: true,
       projection: 'mercator',
       attributionControl: false, // Remove attribution control
+      dragRotate: false, // Disable right-click drag to rotate
+      pitchWithRotate: false, // Disable pitch with rotation
+      touchZoomRotate: false, // Disable touch zoom rotate
     });
 
     mapRef.current = map;
@@ -110,7 +119,7 @@ function GuildMap({
       (scrollZoom as any)._easing = (t: number) => t; // Linear easing for immediate response
     }
 
-    map.on('error', (e) => {
+    map.on('error', (e: any) => {
       console.error('Mapbox error:', e);
     });
 
@@ -256,6 +265,13 @@ function GuildMap({
           if (onElementClick) {
             const sfCaravan = caravans.find(c => c.id === 'sf-startup-cohort-2026');
             if (sfCaravan) {
+              // Zoom to San Francisco
+              map.flyTo({
+                center: [-122.4194, 37.7749],
+                zoom: 11,
+                duration: 1500,
+                essential: true
+              });
               onElementClick({ type: 'caravan', data: sfCaravan });
             }
           }
@@ -272,6 +288,34 @@ function GuildMap({
 
       // Render all map elements
       renderMapElements();
+
+      // Expose zoom controls to parent
+      if (onZoomControlsReady) {
+        onZoomControlsReady({
+          zoomIn: () => {
+            const currentZoom = map.getZoom();
+            map.flyTo({ zoom: currentZoom + 2, duration: 500 });
+          },
+          zoomOut: () => {
+            const currentZoom = map.getZoom();
+            map.flyTo({ zoom: currentZoom - 2, duration: 500 });
+          },
+          resetView: () => {
+            map.flyTo({
+              center: [13.405, 52.52],
+              zoom: 4.5,
+              pitch: 0,
+              bearing: 0,
+              duration: 1500
+            });
+          }
+        });
+      }
+
+      // Notify parent that map is loaded
+      if (onMapLoaded) {
+        onMapLoaded();
+      }
     });
 
     // Add event listener for reset camera button
@@ -331,13 +375,8 @@ function GuildMap({
       map.remove();
       mapRef.current = null;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // Re-render elements when data changes
-  useEffect(() => {
-    if (!mapRef.current || !mapRef.current.isStyleLoaded()) return;
-    renderMapElements();
-  }, [caravans, members, properties]);
 
   // Fetch actual driving route from Mapbox Directions API
   const fetchDrivingRoute = async (waypoints: Array<{ lng: number; lat: number }>) => {
@@ -368,7 +407,7 @@ function GuildMap({
     }
   };
 
-  const renderMapElements = () => {
+  const renderMapElements = useCallback(() => {
     const map = mapRef.current;
     if (!map) return;
 
@@ -570,6 +609,13 @@ function GuildMap({
       if (onElementClick) {
         markerElement.addEventListener('click', (e: MouseEvent) => {
           hideTooltip();
+          // Zoom to the property location
+          map.flyTo({
+            center: [property.location.lng, property.location.lat],
+            zoom: 12,
+            duration: 1500,
+            essential: true
+          });
           onElementClick({ type: 'property', data: property, clickX: e.clientX, clickY: e.clientY });
         });
       }
@@ -628,6 +674,13 @@ function GuildMap({
       if (onElementClick) {
         markerElement.addEventListener('click', () => {
           hideTooltip();
+          // Zoom to the member location
+          map.flyTo({
+            center: [member.location.lng, member.location.lat],
+            zoom: 12,
+            duration: 1500,
+            essential: true
+          });
           onElementClick({ type: 'member', data: member });
         });
       }
@@ -683,7 +736,14 @@ function GuildMap({
             .addTo(map);
 
           liveMarker.getElement().addEventListener('click', () => {
-            if (onElementClick) {
+            if (onElementClick && caravan.currentLocation) {
+              // Zoom to the caravan's current location
+              map.flyTo({
+                center: [caravan.currentLocation.lng, caravan.currentLocation.lat],
+                zoom: 10,
+                duration: 1500,
+                essential: true
+              });
               onElementClick({ type: 'caravan', data: caravan });
             }
           });
@@ -763,6 +823,17 @@ function GuildMap({
             // Add interactivity to route
             map.on('click', routeId, () => {
               if (onElementClick) {
+                // Zoom to fit the entire route
+                const coordinates = caravan.route.waypoints.map(wp => [wp.lng, wp.lat] as [number, number]);
+                const bounds = coordinates.reduce((bounds, coord) => {
+                  return bounds.extend(coord);
+                }, new mapboxgl.LngLatBounds(coordinates[0], coordinates[0]));
+
+                map.fitBounds(bounds, {
+                  padding: 100,
+                  duration: 1500,
+                  essential: true
+                });
                 onElementClick({ type: 'caravan', data: caravan });
               }
             });
@@ -800,8 +871,19 @@ function GuildMap({
       })
         .setLngLat([caravan.route.start.lng, caravan.route.start.lat])
         .setPopup(
-          new mapboxgl.Popup({ offset: 25 })
-            .setHTML(`<strong style="color: #F6FAF6;">Start:</strong> <span style="color: #ffffff;">${caravan.route.start.name}</span>`)
+          new mapboxgl.Popup({ offset: 25, className: 'custom-popup' })
+            .setHTML(`
+              <div style="padding: 12px; background: linear-gradient(135deg, #2b4539, #3f6053); border-radius: 8px; min-width: 200px;">
+                <div style="margin-bottom: 8px;">
+                  <div style="font-size: 10px; color: #F6FAF6; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Route Start</div>
+                  <div style="font-size: 14px; color: #ffffff; font-weight: 600;">${caravan.route.start.name}</div>
+                </div>
+                <div style="border-top: 1px solid rgba(246, 250, 246, 0.2); padding-top: 8px;">
+                  <div style="font-size: 12px; color: #F6FAF6; margin-bottom: 4px;">${caravan.name}</div>
+                  <div style="font-size: 11px; color: rgba(255, 255, 255, 0.7);">${caravan.participants} participants</div>
+                </div>
+              </div>
+            `)
         )
         .addTo(map);
 
@@ -814,8 +896,19 @@ function GuildMap({
       })
         .setLngLat([caravan.route.end.lng, caravan.route.end.lat])
         .setPopup(
-          new mapboxgl.Popup({ offset: 25 })
-            .setHTML(`<strong style="color: #F6FAF6;">End:</strong> <span style="color: #ffffff;">${caravan.route.end.name}</span>`)
+          new mapboxgl.Popup({ offset: 25, className: 'custom-popup' })
+            .setHTML(`
+              <div style="padding: 12px; background: linear-gradient(135deg, #2b4539, #3f6053); border-radius: 8px; min-width: 200px;">
+                <div style="margin-bottom: 8px;">
+                  <div style="font-size: 10px; color: #F6FAF6; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Route End</div>
+                  <div style="font-size: 14px; color: #ffffff; font-weight: 600;">${caravan.route.end.name}</div>
+                </div>
+                <div style="border-top: 1px solid rgba(246, 250, 246, 0.2); padding-top: 8px;">
+                  <div style="font-size: 12px; color: #F6FAF6; margin-bottom: 4px;">${caravan.name}</div>
+                  <div style="font-size: 11px; color: rgba(255, 255, 255, 0.7);">${caravan.participants} participants</div>
+                </div>
+              </div>
+            `)
         )
         .addTo(map);
 
@@ -857,6 +950,13 @@ function GuildMap({
           e.stopPropagation();
           hideTooltip();
           if (onElementClick) {
+            // Zoom to the waypoint location
+            map.flyTo({
+              center: [waypoint.lng, waypoint.lat],
+              zoom: 12,
+              duration: 1500,
+              essential: true
+            });
             // Pass waypoint-specific data for photo gallery
             onElementClick({
               type: 'caravan',
@@ -915,7 +1015,13 @@ function GuildMap({
         markersRef.current.push(liveMarker);
       }
     });
-  };
+  }, [caravans, members, properties, onElementClick, showTooltip, hideTooltip]);
+
+  // Re-render elements when data changes
+  useEffect(() => {
+    if (!mapRef.current || !mapRef.current.isStyleLoaded()) return;
+    renderMapElements();
+  }, [caravans, members, properties, renderMapElements]);
 
   // Handle selected element - do nothing to prevent map shifts
   useEffect(() => {
@@ -935,6 +1041,31 @@ function GuildMap({
 
     map.fitBounds(bounds, { padding: 100, duration: 1000 });
   }, [selectedCaravan]);
+
+  // Disable map interactions when modal is open
+  useEffect(() => {
+    if (!mapRef.current) return;
+
+    const map = mapRef.current;
+
+    if (isModalOpen) {
+      // Disable all map interactions
+      map.dragPan.disable();
+      map.scrollZoom.disable();
+      map.boxZoom.disable();
+      map.doubleClickZoom.disable();
+      map.keyboard.disable();
+      map.touchZoomRotate.disable();
+    } else {
+      // Re-enable map interactions
+      map.dragPan.enable();
+      map.scrollZoom.enable();
+      map.boxZoom.enable();
+      map.doubleClickZoom.enable();
+      map.keyboard.enable();
+      map.touchZoomRotate.enable();
+    }
+  }, [isModalOpen]);
 
   return (
     <>

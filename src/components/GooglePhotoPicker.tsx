@@ -5,7 +5,6 @@ import { useEffect, useState } from 'react';
 declare global {
   interface Window {
     google: any;
-    gapi: any;
   }
 }
 
@@ -21,107 +20,77 @@ export default function GooglePhotoPicker({ onAlbumSelected, onClose }: GooglePh
   const [accessToken, setAccessToken] = useState<string>('');
 
   useEffect(() => {
-    const loadGoogleAPI = () => {
-      // Check if script already exists
-      if (window.gapi) {
-        initializeGoogleAPI();
+    const loadGoogleIdentityServices = () => {
+      // Check if Google Identity Services script already exists
+      if (window.google?.accounts) {
+        initializeGoogleIdentity();
         return;
       }
 
       const script = document.createElement('script');
-      script.src = 'https://apis.google.com/js/api.js';
+      script.src = 'https://accounts.google.com/gsi/client';
       script.async = true;
       script.defer = true;
       script.onload = () => {
-        initializeGoogleAPI();
+        initializeGoogleIdentity();
       };
       script.onerror = () => {
-        setError('Failed to load Google API script');
+        setError('Failed to load Google Identity Services');
         setIsLoading(false);
       };
       document.body.appendChild(script);
     };
 
-    const initializeGoogleAPI = () => {
-      if (!window.gapi) {
-        setError('Google API not available');
+    const initializeGoogleIdentity = () => {
+      if (!window.google?.accounts) {
+        setError('Google Identity Services not available');
         setIsLoading(false);
         return;
       }
 
-      window.gapi.load('client:auth2', async () => {
-        try {
-          const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+      const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
-          if (!clientId) {
-            setError('Google Client ID not configured. Please add NEXT_PUBLIC_GOOGLE_CLIENT_ID to your .env.local file');
-            setIsLoading(false);
-            return;
-          }
+      if (!clientId) {
+        setError('Google Client ID not configured. Please add NEXT_PUBLIC_GOOGLE_CLIENT_ID to your .env.local file');
+        setIsLoading(false);
+        return;
+      }
 
-          await window.gapi.client.init({
-            clientId: clientId,
-            scope: 'https://www.googleapis.com/auth/photoslibrary.readonly',
-            discoveryDocs: ['https://photoslibrary.googleapis.com/$discovery/rest?version=v1'],
-          });
-
-          const authInstance = window.gapi.auth2.getAuthInstance();
-
-          if (!authInstance) {
-            setError('Failed to get auth instance');
-            setIsLoading(false);
-            return;
-          }
-
-          if (!authInstance.isSignedIn.get()) {
-            try {
-              await authInstance.signIn();
-            } catch (signInErr) {
-              setError('Failed to sign in to Google. Please make sure you have the correct permissions.');
+      try {
+        // Initialize the Token Client for OAuth 2.0
+        const tokenClient = window.google.accounts.oauth2.initTokenClient({
+          client_id: clientId,
+          scope: 'https://www.googleapis.com/auth/photoslibrary.readonly',
+          callback: async (tokenResponse: any) => {
+            if (tokenResponse.error) {
+              console.error('Token error:', tokenResponse);
+              setError('Failed to authenticate with Google Photos');
               setIsLoading(false);
               return;
             }
-          }
 
-          await loadAlbums();
-        } catch (err: any) {
-          console.error('Google Photos initialization error:', err);
+            // Store the access token
+            setAccessToken(tokenResponse.access_token);
 
-          // Provide user-friendly error messages
-          let errorMessage = 'Failed to initialize Google Photos';
+            // Load albums with the token
+            await loadAlbums(tokenResponse.access_token);
+          },
+        });
 
-          if (err.error === 'idpiframe_initialization_failed') {
-            errorMessage = 'Google authentication failed to initialize. Please check:\n' +
-                          '1. NEXT_PUBLIC_GOOGLE_CLIENT_ID is correctly set in .env.local\n' +
-                          '2. Your Google Cloud Console OAuth client is configured for web application\n' +
-                          '3. http://localhost:3000 is added to authorized JavaScript origins';
-          } else if (err.error === 'popup_closed_by_user') {
-            errorMessage = 'Sign-in popup was closed. Please try again.';
-          } else if (err.message) {
-            errorMessage = err.message;
-          }
-
-          setError(errorMessage);
-          setIsLoading(false);
-        }
-      });
+        // Request the access token
+        tokenClient.requestAccessToken({ prompt: 'consent' });
+      } catch (err: any) {
+        console.error('Google Identity Services initialization error:', err);
+        setError(err.message || 'Failed to initialize Google authentication');
+        setIsLoading(false);
+      }
     };
 
-    const loadAlbums = async () => {
+    const loadAlbums = async (token: string) => {
       try {
-        const authInstance = window.gapi.auth2.getAuthInstance();
-        if (!authInstance) {
-          throw new Error('Not authenticated');
-        }
-
-        const token = authInstance.currentUser.get().getAuthResponse().access_token;
-
         if (!token) {
           throw new Error('No access token available');
         }
-
-        // Store the access token for later use
-        setAccessToken(token);
 
         const response = await fetch('https://photoslibrary.googleapis.com/v1/albums', {
           headers: {
@@ -144,7 +113,7 @@ export default function GooglePhotoPicker({ onAlbumSelected, onClose }: GooglePh
       }
     };
 
-    loadGoogleAPI();
+    loadGoogleIdentityServices();
   }, []);
 
   return (

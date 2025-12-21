@@ -21,6 +21,7 @@ export default function AdminPage() {
     description: '',
     address: '',
     location: { lat: '', lng: '', name: '' },
+    logoUrl: '', // For partners/VCs
   });
 
   useEffect(() => {
@@ -51,46 +52,47 @@ export default function AdminPage() {
       description: '',
       address: '',
       location: { lat: '', lng: '', name: '' },
+      logoUrl: '',
     });
   };
 
   if (!isAdmin) {
     return (
-      <div className="min-h-screen bg-[#0a1a1a] flex items-center justify-center">
-        <div className="text-teal-400">Loading...</div>
+      <div className="min-h-screen bg-[#000000] flex items-center justify-center">
+        <div className="text-[#3f6053]">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0a1a1a] p-6 overflow-auto">
+    <div className="min-h-screen bg-[#000000] p-6 overflow-auto">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-3xl font-serif text-teal-100 tracking-wide">
+            <h1 className="text-3xl font-serif text-white tracking-wide">
               ADMIN DASHBOARD
             </h1>
             <button
               onClick={() => router.push('/map')}
-              className="px-4 py-2 bg-teal-700 hover:bg-teal-600 text-teal-50 rounded text-sm uppercase tracking-wide transition-all"
+              className="px-4 py-2 bg-[#000000]/80 border border-[#F6FAF6]/50 hover:bg-[#000000]/90 hover:border-[#F6FAF6] text-white rounded text-sm uppercase tracking-wide transition-all"
             >
               Back to Map
             </button>
           </div>
-          <p className="text-teal-300/70 text-sm uppercase tracking-wider">
+          <p className="text-white/70 text-sm uppercase tracking-wider">
             Telos League Administration
           </p>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-4 mb-6 border-b border-teal-800/30">
+        <div className="flex gap-4 mb-6 border-b border-[#3f6053]/30">
           <button
             onClick={() => setActiveTab('passports')}
             className={`pb-3 px-4 text-sm uppercase tracking-wide transition-all ${
               activeTab === 'passports'
-                ? 'border-b-2 border-teal-500 text-teal-100'
-                : 'text-teal-400/60 hover:text-teal-300'
+                ? 'border-b-2 border-[#F6FAF6] text-white'
+                : 'text-white/60 hover:text-white/80'
             }`}
           >
             View Passports
@@ -99,8 +101,8 @@ export default function AdminPage() {
             onClick={() => setActiveTab('add-element')}
             className={`pb-3 px-4 text-sm uppercase tracking-wide transition-all ${
               activeTab === 'add-element'
-                ? 'border-b-2 border-teal-500 text-teal-100'
-                : 'text-teal-400/60 hover:text-teal-300'
+                ? 'border-b-2 border-[#F6FAF6] text-white'
+                : 'text-white/60 hover:text-white/80'
             }`}
           >
             Add Map Element
@@ -109,37 +111,37 @@ export default function AdminPage() {
 
         {/* Content */}
         {activeTab === 'passports' ? (
-          <div className="bg-gradient-to-br from-[#0d2626] to-[#0a1f1f] rounded-lg border border-teal-800/40 p-6">
-            <h2 className="text-xl font-serif text-teal-100 mb-4">Registered Passports</h2>
+          <div className="bg-gradient-to-br from-[#2b4539]/20 to-[#3f6053]/20 rounded-lg border border-[#3f6053]/30 p-6">
+            <h2 className="text-xl font-serif text-white mb-4">Registered Passports</h2>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-teal-800/30">
-                    <th className="text-left py-3 px-4 text-sm uppercase tracking-wide text-teal-400">
+                  <tr className="border-b border-[#3f6053]/30">
+                    <th className="text-left py-3 px-4 text-sm uppercase tracking-wide text-[#F6FAF6]/80">
                       Passport ID
                     </th>
-                    <th className="text-left py-3 px-4 text-sm uppercase tracking-wide text-teal-400">
+                    <th className="text-left py-3 px-4 text-sm uppercase tracking-wide text-[#F6FAF6]/80">
                       Name
                     </th>
-                    <th className="text-left py-3 px-4 text-sm uppercase tracking-wide text-teal-400">
+                    <th className="text-left py-3 px-4 text-sm uppercase tracking-wide text-[#F6FAF6]/80">
                       Status
                     </th>
-                    <th className="text-left py-3 px-4 text-sm uppercase tracking-wide text-teal-400">
+                    <th className="text-left py-3 px-4 text-sm uppercase tracking-wide text-[#F6FAF6]/80">
                       Joined Date
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   {passports.map((passport) => (
-                    <tr key={passport.id} className="border-b border-teal-800/20 hover:bg-teal-900/20 transition-colors">
-                      <td className="py-3 px-4 font-mono text-teal-200">{passport.id}</td>
-                      <td className="py-3 px-4 text-teal-200">{passport.name}</td>
+                    <tr key={passport.id} className="border-b border-[#3f6053]/20 hover:bg-[#2b4539]/20 transition-colors">
+                      <td className="py-3 px-4 font-mono text-[#F6FAF6]">{passport.id}</td>
+                      <td className="py-3 px-4 text-[#F6FAF6]">{passport.name}</td>
                       <td className="py-3 px-4">
-                        <span className="px-2 py-1 bg-green-900/40 text-green-300 text-xs rounded">
+                        <span className="px-2 py-1 bg-[#3f6053]/40 text-[#F6FAF6] text-xs rounded">
                           {passport.status}
                         </span>
                       </td>
-                      <td className="py-3 px-4 text-teal-200/80 text-sm">{passport.joinedDate}</td>
+                      <td className="py-3 px-4 text-white/80 text-sm">{passport.joinedDate}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -147,17 +149,17 @@ export default function AdminPage() {
             </div>
           </div>
         ) : (
-          <div className="bg-gradient-to-br from-[#0d2626] to-[#0a1f1f] rounded-lg border border-teal-800/40 p-6 pb-24">
-            <h2 className="text-xl font-serif text-teal-100 mb-4">Add New Map Element</h2>
+          <div className="bg-gradient-to-br from-[#2b4539]/20 to-[#3f6053]/20 rounded-lg border border-[#3f6053]/30 p-6 pb-24">
+            <h2 className="text-xl font-serif text-white mb-4">Add New Map Element</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm text-teal-300/90 mb-2 uppercase tracking-wide">
+                <label className="block text-sm text-white/90 mb-2 uppercase tracking-wide">
                   Element Type
                 </label>
                 <select
                   value={newElement.type}
                   onChange={(e) => setNewElement({ ...newElement, type: e.target.value })}
-                  className="w-full px-4 py-3 bg-[#0a1a1a]/80 border border-teal-700/40 rounded text-teal-100 focus:outline-none focus:ring-2 focus:ring-teal-500/50"
+                  className="w-full px-4 py-3 bg-[#000000]/80 border border-[#3f6053]/40 rounded text-white focus:outline-none focus:ring-2 focus:ring-[#F6FAF6]/50"
                 >
                   <option value="caravan">Caravan Expedition</option>
                   <option value="property">Property/Location</option>
@@ -169,7 +171,7 @@ export default function AdminPage() {
               </div>
 
               <div>
-                <label className="block text-sm text-teal-300/90 mb-2 uppercase tracking-wide">
+                <label className="block text-sm text-white/90 mb-2 uppercase tracking-wide">
                   Name
                 </label>
                 <input
@@ -177,13 +179,13 @@ export default function AdminPage() {
                   value={newElement.name}
                   onChange={(e) => setNewElement({ ...newElement, name: e.target.value })}
                   placeholder="Enter element name"
-                  className="w-full px-4 py-3 bg-[#0a1a1a]/80 border border-teal-700/40 rounded text-teal-100 placeholder-teal-700/50 focus:outline-none focus:ring-2 focus:ring-teal-500/50"
+                  className="w-full px-4 py-3 bg-[#000000]/80 border border-[#3f6053]/40 rounded text-white placeholder-[#3f6053]/50 focus:outline-none focus:ring-2 focus:ring-[#F6FAF6]/50"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm text-teal-300/90 mb-2 uppercase tracking-wide">
+                <label className="block text-sm text-white/90 mb-2 uppercase tracking-wide">
                   Description
                 </label>
                 <textarea
@@ -191,12 +193,31 @@ export default function AdminPage() {
                   onChange={(e) => setNewElement({ ...newElement, description: e.target.value })}
                   placeholder="Enter description"
                   rows={4}
-                  className="w-full px-4 py-3 bg-[#0a1a1a]/80 border border-teal-700/40 rounded text-teal-100 placeholder-teal-700/50 focus:outline-none focus:ring-2 focus:ring-teal-500/50"
+                  className="w-full px-4 py-3 bg-[#000000]/80 border border-[#3f6053]/40 rounded text-white placeholder-[#3f6053]/50 focus:outline-none focus:ring-2 focus:ring-[#F6FAF6]/50"
                 />
               </div>
 
+              {/* Logo URL field - only for partners and VCs */}
+              {(newElement.type === 'partner' || newElement.type === 'member') && (
+                <div>
+                  <label className="block text-sm text-white/90 mb-2 uppercase tracking-wide">
+                    Logo URL
+                  </label>
+                  <input
+                    type="url"
+                    value={newElement.logoUrl || ''}
+                    onChange={(e) => setNewElement({ ...newElement, logoUrl: e.target.value })}
+                    placeholder="Enter logo image URL (https://...)"
+                    className="w-full px-4 py-3 bg-[#000000]/80 border border-[#3f6053]/40 rounded text-white placeholder-[#3f6053]/50 focus:outline-none focus:ring-2 focus:ring-[#F6FAF6]/50"
+                  />
+                  <p className="mt-1 text-xs text-white/50">
+                    The logo will be displayed on the map at this location
+                  </p>
+                </div>
+              )}
+
               <div>
-                <label className="block text-sm text-teal-300/90 mb-2 uppercase tracking-wide">
+                <label className="block text-sm text-white/90 mb-2 uppercase tracking-wide">
                   Address
                 </label>
                 <div className="flex gap-2">
@@ -205,7 +226,7 @@ export default function AdminPage() {
                     value={newElement.address || ''}
                     onChange={(e) => setNewElement({ ...newElement, address: e.target.value })}
                     placeholder="Enter address (e.g., 123 Main St, New York, NY)"
-                    className="flex-1 px-4 py-3 bg-[#0a1a1a]/80 border border-teal-700/40 rounded text-teal-100 placeholder-teal-700/50 focus:outline-none focus:ring-2 focus:ring-teal-500/50"
+                    className="flex-1 px-4 py-3 bg-[#000000]/80 border border-[#3f6053]/40 rounded text-white placeholder-[#3f6053]/50 focus:outline-none focus:ring-2 focus:ring-[#F6FAF6]/50"
                   />
                   <button
                     type="button"
@@ -216,7 +237,7 @@ export default function AdminPage() {
                       }
                       try {
                         const response = await fetch(
-                          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(newElement.address)}.json?access_token=${process.env.NEXT_PUBLIC_MAPBOX_TOKEN}`
+                          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(newElement.address)}.json?access_token=${process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN}`
                         );
                         const data = await response.json();
                         if (data.features && data.features.length > 0) {
@@ -239,7 +260,7 @@ export default function AdminPage() {
                         alert('Error finding address. Please enter coordinates manually.');
                       }
                     }}
-                    className="px-6 py-3 bg-teal-700/50 hover:bg-teal-700 text-teal-100 rounded transition-all"
+                    className="px-6 py-3 bg-[#3f6053]/50 hover:bg-[#3f6053] text-white rounded transition-all"
                   >
                     Find
                   </button>
@@ -248,7 +269,7 @@ export default function AdminPage() {
 
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm text-teal-300/90 mb-2 uppercase tracking-wide">
+                  <label className="block text-sm text-white/90 mb-2 uppercase tracking-wide">
                     Latitude
                   </label>
                   <input
@@ -260,12 +281,12 @@ export default function AdminPage() {
                       location: { ...newElement.location, lat: e.target.value }
                     })}
                     placeholder="52.52"
-                    className="w-full px-4 py-3 bg-[#0a1a1a]/80 border border-teal-700/40 rounded text-teal-100 placeholder-teal-700/50 focus:outline-none focus:ring-2 focus:ring-teal-500/50"
+                    className="w-full px-4 py-3 bg-[#000000]/80 border border-[#3f6053]/40 rounded text-white placeholder-[#3f6053]/50 focus:outline-none focus:ring-2 focus:ring-[#F6FAF6]/50"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-teal-300/90 mb-2 uppercase tracking-wide">
+                  <label className="block text-sm text-white/90 mb-2 uppercase tracking-wide">
                     Longitude
                   </label>
                   <input
@@ -277,12 +298,12 @@ export default function AdminPage() {
                       location: { ...newElement.location, lng: e.target.value }
                     })}
                     placeholder="13.405"
-                    className="w-full px-4 py-3 bg-[#0a1a1a]/80 border border-teal-700/40 rounded text-teal-100 placeholder-teal-700/50 focus:outline-none focus:ring-2 focus:ring-teal-500/50"
+                    className="w-full px-4 py-3 bg-[#000000]/80 border border-[#3f6053]/40 rounded text-white placeholder-[#3f6053]/50 focus:outline-none focus:ring-2 focus:ring-[#F6FAF6]/50"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-teal-300/90 mb-2 uppercase tracking-wide">
+                  <label className="block text-sm text-white/90 mb-2 uppercase tracking-wide">
                     Location Name
                   </label>
                   <input
@@ -293,7 +314,7 @@ export default function AdminPage() {
                       location: { ...newElement.location, name: e.target.value }
                     })}
                     placeholder="Berlin"
-                    className="w-full px-4 py-3 bg-[#0a1a1a]/80 border border-teal-700/40 rounded text-teal-100 placeholder-teal-700/50 focus:outline-none focus:ring-2 focus:ring-teal-500/50"
+                    className="w-full px-4 py-3 bg-[#000000]/80 border border-[#3f6053]/40 rounded text-white placeholder-[#3f6053]/50 focus:outline-none focus:ring-2 focus:ring-[#F6FAF6]/50"
                     required
                   />
                 </div>
@@ -301,7 +322,7 @@ export default function AdminPage() {
 
               <button
                 type="submit"
-                className="w-full py-3 bg-gradient-to-r from-teal-700 to-teal-600 hover:from-teal-600 hover:to-teal-500 text-teal-50 rounded font-serif uppercase tracking-wider transition-all shadow-lg"
+                className="w-full py-3 bg-gradient-to-r from-[#F6FAF6] to-[#ffffff] hover:from-[#F6FAF6]/90 hover:to-[#ffffff]/90 text-[#000000] rounded font-serif uppercase tracking-wider transition-all shadow-lg"
               >
                 Add Element to Map
               </button>

@@ -119,9 +119,9 @@ export default function PassportOverlay({ passportId, isAdmin, onLogout }: Passp
       {/* Passport Button - Fixed positioning */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed top-4 right-4 z-[10000] bg-[#000000]/80 backdrop-blur-sm p-3 rounded-lg shadow-2xl border border-[#F6FAF6]/50 hover:bg-[#000000]/90 hover:border-[#F6FAF6] transition-all duration-300"
+        className="fixed top-4 right-4 z-[10000] bg-[#000000]/80 backdrop-blur-sm p-3 rounded-lg shadow-2xl border-2 border-[#3f6053]/50 hover:bg-[#000000]/90 hover:border-[#3f6053] transition-all duration-300"
         style={{
-          boxShadow: '0 8px 32px rgba(0,0,0,0.4), inset 0 1px 2px rgba(246,250,246,0.1)'
+          boxShadow: '0 8px 32px rgba(0,0,0,0.4), inset 0 1px 2px rgba(63,96,83,0.1)'
         }}
         aria-label="Open Passport"
       >
@@ -218,7 +218,7 @@ export default function PassportOverlay({ passportId, isAdmin, onLogout }: Passp
                     <span className="text-[#F6FAF6]/50">❖</span>
                   </div>
 
-                  <p className="text-xl text-[#F6FAF6]/90 uppercase tracking-[0.25em] font-serif mb-2">Telos League</p>
+                  <p className="text-xl text-[#F6FAF6]/90 uppercase tracking-[0.25em] font-serif mb-2">Telos Guild Network</p>
                   <p className="text-xs text-[#F6FAF6]/60 uppercase tracking-widest mb-6">Trad-Digital Network</p>
 
                   <div className="mt-4 text-center px-8 py-3 border-t border-b border-[#F6FAF6]/30 relative">
@@ -243,7 +243,7 @@ export default function PassportOverlay({ passportId, isAdmin, onLogout }: Passp
             {/* Left Page (under the cover when closed) */}
             <div
               ref={leftPageRef}
-              className="absolute left-0 top-0 w-1/2 h-full bg-gradient-to-br from-[#F6FAF6] to-[#ffffff] rounded-l-xl shadow-2xl overflow-y-auto"
+              className="absolute left-0 top-0 w-1/2 h-full bg-gradient-to-br from-[#1a2e1f] to-[#0f1a12] rounded-l-xl shadow-2xl overflow-y-auto"
               style={{
                 transformStyle: 'preserve-3d',
                 transformOrigin: 'left center',
@@ -274,7 +274,7 @@ export default function PassportOverlay({ passportId, isAdmin, onLogout }: Passp
                 </div>
 
                 {/* Caravan Routes Section */}
-                <div className="border-2 border-[#3f6053] rounded-lg overflow-hidden mb-6"
+                <div className="border-2 border-[#3f6053]/50 rounded-lg overflow-hidden mb-6"
                   style={{
                     boxShadow: '0 4px 16px rgba(63,96,83,0.2)'
                   }}
@@ -284,25 +284,25 @@ export default function PassportOverlay({ passportId, isAdmin, onLogout }: Passp
                       CARAVAN ROUTES
                     </h3>
                   </div>
-                  <div className="bg-[#ffffff] p-4">
+                  <div className="bg-[#0f1a12] p-4">
                     <div className="space-y-3">
                       <div className="flex items-start gap-2">
                         <span className="text-lg">🚐</span>
                         <div className="flex-1">
-                          <p className="text-xs text-[#6b7c6b] font-semibold mb-0.5">Slush Caravan 2025</p>
-                          <p className="text-[10px] text-[#8b8b7a]">London → Helsinki</p>
-                          <span className="inline-block mt-1 px-2 py-0.5 bg-gray-400 text-gray-700 text-[9px] rounded uppercase tracking-wide">
+                          <p className="text-xs text-[#F6FAF6] font-semibold mb-0.5">Slush Caravan 2025</p>
+                          <p className="text-[10px] text-[#cccccc]/70">London → Helsinki</p>
+                          <span className="inline-block mt-1 px-2 py-0.5 bg-[#3f6053]/30 text-[#F6FAF6] text-[9px] rounded uppercase tracking-wide">
                             Completed
                           </span>
                         </div>
                       </div>
-                      <div className="h-px bg-[#3f6053]"></div>
+                      <div className="h-px bg-[#3f6053]/30"></div>
                       <div className="flex items-start gap-2">
                         <span className="text-lg">🚐</span>
                         <div className="flex-1">
-                          <p className="text-xs text-[#6b7c6b] font-semibold mb-0.5">Davos Caravan 2026</p>
-                          <p className="text-[10px] text-[#8b8b7a]">London → Davos</p>
-                          <span className="inline-block mt-1 px-2 py-0.5 bg-amber-200 text-amber-800 text-[9px] rounded uppercase tracking-wide">
+                          <p className="text-xs text-[#F6FAF6] font-semibold mb-0.5">Davos Caravan 2026</p>
+                          <p className="text-[10px] text-[#cccccc]/70">London → Davos</p>
+                          <span className="inline-block mt-1 px-2 py-0.5 bg-[#F6FAF6]/20 text-[#F6FAF6] text-[9px] rounded uppercase tracking-wide">
                             Upcoming
                           </span>
                         </div>
@@ -312,7 +312,7 @@ export default function PassportOverlay({ passportId, isAdmin, onLogout }: Passp
                 </div>
 
                 {/* Stamps Section */}
-                <div className="border-2 border-[#3f6053] rounded-lg overflow-hidden mb-6"
+                <div className="border-2 border-[#3f6053]/50 rounded-lg overflow-hidden mb-6"
                   style={{
                     boxShadow: '0 4px 16px rgba(63,96,83,0.2)'
                   }}
@@ -322,7 +322,7 @@ export default function PassportOverlay({ passportId, isAdmin, onLogout }: Passp
                       TRAVEL STAMPS
                     </h3>
                   </div>
-                  <div className="bg-[#ffffff] p-4">
+                  <div className="bg-[#0f1a12] p-4">
                     <div className="grid grid-cols-2 gap-3">
                       <div className="border-2 border-red-800/30 rounded p-2 bg-red-50/50 rotate-[-3deg]">
                         <p className="text-[9px] text-red-900 font-bold uppercase text-center">London</p>
@@ -346,7 +346,7 @@ export default function PassportOverlay({ passportId, isAdmin, onLogout }: Passp
 
                 {/* Quote at bottom */}
                 <div className="mt-auto pt-4">
-                  <p className="text-xs text-[#6b7c6b] text-center italic font-serif">
+                  <p className="text-xs text-[#cccccc]/60 text-center italic font-serif">
                     "The journey of a thousand miles begins with a single step"
                   </p>
                 </div>
@@ -357,7 +357,7 @@ export default function PassportOverlay({ passportId, isAdmin, onLogout }: Passp
             {/* Right Page (content page) */}
             <div
               ref={rightPageRef}
-              className="absolute right-0 top-0 w-1/2 h-full bg-[#F6FAF6] rounded-r-xl shadow-2xl overflow-y-auto"
+              className="absolute right-0 top-0 w-1/2 h-full bg-[#1a2e1f] rounded-r-xl shadow-2xl overflow-y-auto"
               style={{
                 transformStyle: 'preserve-3d',
                 transformOrigin: 'right center',
@@ -367,18 +367,18 @@ export default function PassportOverlay({ passportId, isAdmin, onLogout }: Passp
             >
               <div className="p-8">
                 {/* Member Information Section */}
-                <div className="border-2 border-[#3f6053] rounded-lg overflow-hidden mb-6"
+                <div className="border-2 border-[#3f6053]/50 rounded-lg overflow-hidden mb-6"
                   style={{
                     boxShadow: '0 4px 16px rgba(63,96,83,0.2)'
                   }}
                 >
                   <div className="bg-gradient-to-r from-[#2b4539] to-[#3f6053] p-3">
-                    <h3 className="text-white font-serif text-lg tracking-wide">
+                    <h3 className="text-[#F6FAF6] font-serif text-lg tracking-wide">
                       MEMBER INFORMATION
                     </h3>
                   </div>
 
-                  <div className="relative bg-gradient-to-br from-[#2b4539] to-[#3f6053] p-4">
+                  <div className="relative bg-gradient-to-br from-[#0f1a12] to-[#1a2e1f] p-4">
                     <div className="flex items-center gap-4 mb-4">
                       <img
                         src="/telos-house-logo.png"
@@ -386,65 +386,65 @@ export default function PassportOverlay({ passportId, isAdmin, onLogout }: Passp
                         className="w-20 h-20 rounded-full border-2 border-[#F6FAF6] object-cover bg-[#F6FAF6]/20 p-2"
                       />
                       <div className="flex-1">
-                        <p className="text-xs text-[#F6FAF6] uppercase tracking-wide mb-1">Name</p>
-                        <p className="text-base text-white font-serif mb-2">Alexander Cross</p>
-                        <p className="text-xs text-[#F6FAF6] uppercase tracking-wide mb-1">Ranking</p>
-                        <p className="text-sm text-white">Senior Partner</p>
+                        <p className="text-xs text-[#cccccc]/70 uppercase tracking-wide mb-1">Name</p>
+                        <p className="text-base text-[#F6FAF6] font-serif mb-2">Alexander Cross</p>
+                        <p className="text-xs text-[#cccccc]/70 uppercase tracking-wide mb-1">Ranking</p>
+                        <p className="text-sm text-[#F6FAF6]">Senior Partner</p>
                       </div>
                     </div>
-                    <div className="h-px bg-[#F6FAF6]/30 my-3"></div>
+                    <div className="h-px bg-[#3f6053]/30 my-3"></div>
                     <div>
-                      <p className="text-xs text-[#F6FAF6] uppercase tracking-wide mb-1">Guild</p>
-                      <p className="text-sm text-white font-serif">Telos House</p>
+                      <p className="text-xs text-[#cccccc]/70 uppercase tracking-wide mb-1">Guild</p>
+                      <p className="text-sm text-[#F6FAF6] font-serif">Telos House</p>
                     </div>
                   </div>
                 </div>
 
                 {/* Passport ID Section */}
-                <div className="border-2 border-[#3f6053] rounded-lg overflow-hidden mb-6"
+                <div className="border-2 border-[#3f6053]/50 rounded-lg overflow-hidden mb-6"
                   style={{
                     boxShadow: '0 4px 16px rgba(63,96,83,0.2)'
                   }}
                 >
                   <div className="bg-gradient-to-r from-[#2b4539] to-[#3f6053] p-3">
-                    <h3 className="text-white font-serif text-lg tracking-wide">
+                    <h3 className="text-[#F6FAF6] font-serif text-lg tracking-wide">
                       PASSPORT ID
                     </h3>
                   </div>
 
-                  <div className="relative bg-gradient-to-br from-[#2b4539] to-[#3f6053] p-4">
+                  <div className="relative bg-gradient-to-br from-[#0f1a12] to-[#1a2e1f] p-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <p className="text-xs text-[#F6FAF6] uppercase tracking-wide mb-1">Telos House</p>
-                        <p className="text-sm text-white font-mono">{passportId.substring(0, 8)}</p>
+                        <p className="text-xs text-[#cccccc]/70 uppercase tracking-wide mb-1">Telos House</p>
+                        <p className="text-sm text-[#F6FAF6] font-mono">{passportId.substring(0, 8)}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-[#F6FAF6] uppercase tracking-wide mb-1">THCRVN25</p>
-                        <p className="text-sm text-white">∞</p>
+                        <p className="text-xs text-[#cccccc]/70 uppercase tracking-wide mb-1">THCRVN25</p>
+                        <p className="text-sm text-[#F6FAF6]">∞</p>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="p-3 bg-gradient-to-br from-[#ffffff] to-[#F6FAF6] border border-[#3f6053] rounded-lg mb-4"
+                <div className="p-3 bg-gradient-to-br from-[#0f1a12] to-[#1a2e1f] border border-[#3f6053]/50 rounded-lg mb-4"
                   style={{
                     boxShadow: 'inset 0 1px 3px rgba(63,96,83,0.2)'
                   }}
                 >
                   <div className="flex items-center justify-between text-xs">
                     <div>
-                      <p className="text-[#6b7c6b] uppercase tracking-wide mb-1">Ticket Type</p>
-                      <p className="text-[#2c3e2e] font-mono">∞</p>
+                      <p className="text-[#cccccc]/70 uppercase tracking-wide mb-1">Ticket Type</p>
+                      <p className="text-[#F6FAF6] font-mono">∞</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-[#6b7c6b] uppercase tracking-wide mb-1">Access Level</p>
+                      <p className="text-[#cccccc]/70 uppercase tracking-wide mb-1">Access Level</p>
                       {isAdmin ? (
-                        <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-gradient-to-r from-amber-600 to-amber-500 rounded border border-amber-700 shadow-lg">
+                        <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-gradient-to-r from-[#3f6053] to-[#2b4539] rounded border border-[#F6FAF6]/30 shadow-lg">
                           <span className="text-xs">⚡</span>
-                          <p className="text-xs text-white font-bold uppercase tracking-wide">Admin</p>
+                          <p className="text-xs text-[#F6FAF6] font-bold uppercase tracking-wide">Admin</p>
                         </div>
                       ) : (
-                        <p className="text-[#2c3e2e]">Member</p>
+                        <p className="text-[#F6FAF6]">Member</p>
                       )}
                     </div>
                   </div>

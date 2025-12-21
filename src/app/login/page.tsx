@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
+import { allCaravans, properties } from '@/data/mockData';
+import { Caravan, Property } from '@/types/guild';
 
 const GuildMap = dynamic(() => import('@/components/GuildMap'), {
   ssr: false,
@@ -13,7 +15,17 @@ const GuildMap = dynamic(() => import('@/components/GuildMap'), {
   ),
 });
 
-// All Telos House locations (visible to everyone)
+const MiniBrowserModal = dynamic(() => import('@/components/MiniBrowserModal'), {
+  ssr: false,
+});
+
+// Filter to show only Telos House locations (not suppliers or VCs)
+const telosHouses = properties.filter(p =>
+  p.id === 'prop-telos' || p.id === 'prop-telos-sf' || p.id === 'prop-telos-shenzhen'
+);
+
+// Old hardcoded data - now using real data from mockData
+/*
 const telosHouses = [
   {
     id: 'prop-telos',
@@ -43,72 +55,55 @@ const telosHouses = [
     amenities: ['Coworking', 'Hardware Lab', 'Manufacturing Access'],
   },
 ];
-
-// Expeditions (visible to everyone)
-const publicExpeditions = [
-  {
-    id: 'caravan-1',
-    name: 'Silk Road Revival',
-    status: 'upcoming' as const,
-    route: {
-      start: { lat: 51.5074, lng: -0.1278, name: 'London' },
-      end: { lat: 39.9042, lng: 116.4074, name: 'Beijing' },
-      waypoints: [
-        { lat: 48.8566, lng: 2.3522, name: 'Paris' },
-        { lat: 41.9028, lng: 12.4964, name: 'Rome' },
-        { lat: 41.0082, lng: 28.9784, name: 'Istanbul' },
-        { lat: 39.9334, lng: 32.8597, name: 'Ankara' },
-        { lat: 40.4093, lng: 49.8671, name: 'Baku' },
-        { lat: 41.2995, lng: 69.2401, name: 'Tashkent' },
-      ],
-    },
-    stops: [
-      {
-        location: { lat: 51.5074, lng: -0.1278, name: 'London' },
-        arrivalDate: '2025-06-01',
-        departureDate: '2025-06-05',
-        description: 'Starting point - Telos House London',
-      },
-      {
-        location: { lat: 39.9042, lng: 116.4074, name: 'Beijing' },
-        arrivalDate: '2025-08-10',
-        departureDate: '2025-08-15',
-        description: 'Final destination',
-      },
-    ],
-    participants: 12,
-    vehicles: 3,
-    startDate: '2025-06-01',
-    endDate: '2025-08-15',
-    description: 'A modern journey along the ancient Silk Road, connecting traditional crafts with contemporary digital innovation',
-  },
-];
-
-// Startup cohort members (visible to everyone)
-const publicMembers = [
-  {
-    id: 'member-startup-1',
-    name: 'Alex Chen',
-    passportId: 'TG-2025-101',
-    location: { lat: 37.7749, lng: -122.4194, name: 'San Francisco' },
-    bio: 'Founder of Blockchain Solutions Inc.',
-    joinedDate: '2025-01-15',
-  },
-  {
-    id: 'member-startup-2',
-    name: 'Sarah Martinez',
-    passportId: 'TG-2025-102',
-    location: { lat: 40.7128, lng: -74.0060, name: 'New York' },
-    bio: 'CEO of Green Tech Ventures',
-    joinedDate: '2025-02-01',
-  },
-];
+*/
 
 export default function LoginPage() {
   const [passportId, setPassportId] = useState('');
   const [error, setError] = useState('');
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const [selectedElement, setSelectedElement] = useState<{ type: 'caravan' | 'property'; data: Caravan | Property; clickX?: number; clickY?: number } | null>(null);
+  const [showTelosIframe, setShowTelosIframe] = useState(false);
   const router = useRouter();
+
+  const calculateModalPosition = () => {
+    if (typeof window === 'undefined') return { x: 0, y: 0 };
+
+    const modalWidth = 700;
+    const modalHeight = 600;
+    const padding = 20;
+    const offset = 10;
+
+    const clickX = selectedElement?.clickX || window.innerWidth / 2;
+    const clickY = selectedElement?.clickY || window.innerHeight / 2;
+
+    let x = clickX + offset;
+    let y = clickY + offset;
+
+    // Check right edge overflow
+    if (x + modalWidth + padding > window.innerWidth) {
+      x = clickX - modalWidth - offset;
+      if (x < padding) {
+        x = window.innerWidth - modalWidth - padding;
+      }
+    }
+
+    // Check bottom edge overflow
+    if (y + modalHeight > window.innerHeight) {
+      y = clickY - modalHeight - offset;
+      if (y < padding) {
+        y = window.innerHeight - modalHeight - padding;
+      }
+    }
+
+    // Final bounds check
+    x = Math.max(padding, Math.min(x, window.innerWidth - modalWidth - padding));
+    y = Math.max(padding, Math.min(y, window.innerHeight - modalHeight - padding));
+
+    return { x, y };
+  };
+
+  const modalPosition = calculateModalPosition();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -153,7 +148,7 @@ export default function LoginPage() {
               textShadow: '0 2px 8px rgba(0,0,0,0.5)'
             }}
           >
-            TELOS LEAGUE
+            TELOS GUILD NETWORK
           </h1>
           <p className="text-xs text-white/80 text-center uppercase tracking-wider mb-4">
             Trad-Digital Network
@@ -179,14 +174,34 @@ export default function LoginPage() {
         </div>
       </div>
 
+      {/* Loading Screen */}
+      {!mapLoaded && (
+        <div className="fixed inset-0 z-[9998] flex flex-col items-center justify-center bg-[#000000]">
+          <img
+            src="/telos-house-logo.png"
+            alt="Telos House"
+            className="w-32 h-32 mb-6 animate-pulse"
+          />
+          <h2 className="font-serif text-2xl text-white mb-2">Loading Map...</h2>
+          <p className="text-white/60 text-sm">Preparing your journey</p>
+        </div>
+      )}
+
       {/* Map - full screen */}
       <div className="h-full w-full">
         <GuildMap
-          caravans={publicExpeditions}
-          members={publicMembers}
+          caravans={allCaravans}
+          members={[]}
           properties={telosHouses}
           selectedCaravan={null}
-          onElementClick={() => {}}
+          onElementClick={(element) => {
+            setSelectedElement(element as { type: 'caravan' | 'property'; data: Caravan | Property; clickX?: number; clickY?: number });
+            if (element.type === 'property' && (element.data as Property).id.startsWith('prop-telos')) {
+              setShowTelosIframe(true);
+            }
+          }}
+          isModalOpen={!!selectedElement || showTelosIframe}
+          onMapLoaded={() => setMapLoaded(true)}
         />
       </div>
 
@@ -236,6 +251,107 @@ export default function LoginPage() {
         </div>
       </button>
 
+      {/* Caravan/Property Details Modal */}
+      {selectedElement && !showTelosIframe && selectedElement.type === 'caravan' && (
+        <MiniBrowserModal
+          title={(selectedElement.data as Caravan).name}
+          onClose={() => setSelectedElement(null)}
+          position={modalPosition}
+          width="700px"
+          height="auto"
+        >
+          <div>
+            <p className="text-white/80 mb-4">{(selectedElement.data as Caravan).description}</p>
+
+            {(selectedElement.data as Caravan).route && (
+              <div className="mb-4">
+                <h4 className="text-sm font-semibold text-white mb-2">Route</h4>
+                <p className="text-xs text-white/70">
+                  {(selectedElement.data as Caravan).route.start.name} → {(selectedElement.data as Caravan).route.end.name}
+                </p>
+              </div>
+            )}
+
+            <div className="mb-4">
+              <h4 className="text-sm font-semibold text-white mb-2">Participants</h4>
+              <p className="text-xs text-white/70">{(selectedElement.data as Caravan).participants} members</p>
+            </div>
+
+            {(selectedElement.data as Caravan).status && (
+              <div className="mb-4">
+                <h4 className="text-sm font-semibold text-white mb-2">Status</h4>
+                <span className={`inline-block px-2 py-1 rounded text-xs ${
+                  (selectedElement.data as Caravan).status === 'completed' ? 'bg-gray-500/30 text-gray-300' :
+                  (selectedElement.data as Caravan).status === 'live' ? 'bg-green-500/30 text-green-300' :
+                  'bg-amber-500/30 text-amber-300'
+                }`}>
+                  {(selectedElement.data as Caravan).status}
+                </span>
+              </div>
+            )}
+
+            <p className="text-xs text-white/50 mt-4 italic">
+              Login to view full details and contribute
+            </p>
+          </div>
+        </MiniBrowserModal>
+      )}
+
+      {/* Telos House Iframe Modal */}
+      {selectedElement && selectedElement.type === 'property' && showTelosIframe && (
+        (() => {
+          const property = selectedElement.data as Property;
+          const padding = 20;
+          const iframeWidth = Math.min(1200, window.innerWidth - padding * 2);
+          const iframeHeight = window.innerHeight * 0.9;
+
+          let x = modalPosition.x + 30;
+          let y = modalPosition.y + 30;
+
+          if (x + iframeWidth + padding > window.innerWidth) {
+            x = window.innerWidth - iframeWidth - padding;
+          }
+          if (y + iframeHeight > window.innerHeight) {
+            y = window.innerHeight - iframeHeight - padding;
+          }
+
+          x = Math.max(padding, x);
+          y = Math.max(padding, y);
+
+          return (
+            <div
+              className="fixed z-[10001] bg-[#1e1e1e] border border-[#3f3f46] shadow-2xl overflow-hidden"
+              style={{
+                left: `${x}px`,
+                top: `${y}px`,
+                width: `${iframeWidth}px`,
+                height: `${iframeHeight}px`,
+              }}
+            >
+              <div className="flex items-center justify-between px-3 py-2 bg-[#2d2d30] border-b border-[#3f3f46]">
+                <h3 className="text-xs text-[#cccccc] font-normal">{property.name}</h3>
+                <button
+                  onClick={() => {
+                    setShowTelosIframe(false);
+                    setSelectedElement(null);
+                  }}
+                  className="w-11 h-7 flex items-center justify-center hover:bg-[#e81123] text-[#cccccc] hover:text-white transition-colors"
+                >
+                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M0.5 0.5L9.5 9.5M9.5 0.5L0.5 9.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
+                  </svg>
+                </button>
+              </div>
+              <iframe
+                src="https://www.teloshouse.com"
+                className="w-full h-[calc(100%-31px)] border-0"
+                title={property.name}
+              />
+            </div>
+          );
+        })()
+      )}
+
       {showLoginModal && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-8 bg-black/60 backdrop-blur-[2px]">
           <div className="relative bg-gradient-to-br from-[#2b4539] to-[#000000] rounded-lg border-2 border-[#3f6053]/40 shadow-2xl p-6 md:p-8 w-full max-w-md">
@@ -248,7 +364,7 @@ export default function LoginPage() {
 
             <div className="text-center mb-6 md:mb-8">
               <h1 className="text-2xl md:text-3xl font-serif text-white tracking-wider mb-2">
-                TELOS LEAGUE
+                TELOS GUILD NETWORK
               </h1>
               <div className="flex items-center justify-center gap-2 mb-4">
                 <div className="h-px bg-[#3f6053]/40 flex-1"></div>

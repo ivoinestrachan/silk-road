@@ -1,0 +1,46 @@
+'use client';
+
+interface ZoomControlsProps {
+  onZoomIn: () => void;
+  onZoomOut: () => void;
+  onResetView: () => void;
+}
+
+export default function ZoomControls({ onZoomIn, onZoomOut, onResetView }: ZoomControlsProps) {
+  return (
+    <div className="fixed bottom-24 right-4 z-[9997] flex flex-col gap-2">
+      <button
+        onClick={onZoomIn}
+        className="w-12 h-12 bg-[#000000]/90 backdrop-blur-sm rounded-lg shadow-2xl border-2 border-[#F6FAF6]/50 hover:bg-[#000000]/95 hover:border-[#F6FAF6] transition-all flex items-center justify-center"
+        title="Zoom In"
+        aria-label="Zoom In"
+      >
+        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+        </svg>
+      </button>
+
+      <button
+        onClick={onResetView}
+        className="w-12 h-12 bg-[#000000]/90 backdrop-blur-sm rounded-lg shadow-2xl border-2 border-[#F6FAF6]/50 hover:bg-[#000000]/95 hover:border-[#F6FAF6] transition-all flex items-center justify-center"
+        title="Reset View"
+        aria-label="Reset View"
+      >
+        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+        </svg>
+      </button>
+
+      <button
+        onClick={onZoomOut}
+        className="w-12 h-12 bg-[#000000]/90 backdrop-blur-sm rounded-lg shadow-2xl border-2 border-[#F6FAF6]/50 hover:bg-[#000000]/95 hover:border-[#F6FAF6] transition-all flex items-center justify-center"
+        title="Zoom Out"
+        aria-label="Zoom Out"
+      >
+        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+        </svg>
+      </button>
+    </div>
+  );
+}

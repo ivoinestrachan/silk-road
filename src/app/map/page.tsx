@@ -7,6 +7,8 @@ import { HiHome, HiArrowRight } from 'react-icons/hi';
 import PassportOverlay from '@/components/PassportOverlay';
 import PhotoGalleryModal from '@/components/PhotoGalleryModal';
 import MiniBrowserModal from '@/components/MiniBrowserModal';
+import BulletinBoard from '@/components/BulletinBoard';
+import ZoomControls from '@/components/ZoomControls';
 import {
   allCaravans,
   properties,
@@ -56,6 +58,12 @@ export default function MapPage() {
   const [showPhotoGallery, setShowPhotoGallery] = useState(false);
   const [photoGalleryLocation, setPhotoGalleryLocation] = useState<string>('');
   const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const [zoomControls, setZoomControls] = useState<{
+    zoomIn: () => void;
+    zoomOut: () => void;
+    resetView: () => void;
+  } | null>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -95,30 +103,46 @@ export default function MapPage() {
   };
 
   const handleElementClick = (element: MapElement & { clickX?: number; clickY?: number }) => {
-    // Calculate modal position near click location
+    // Calculate modal position near click location with smart edge detection
     const calculateModalPosition = () => {
       if (typeof window === 'undefined') return { x: 0, y: 0 };
 
-      const modalWidth = 500;
-      const modalHeight = 600;
+      const modalWidth = 700; // Max width of largest modal
+      const modalHeight = 600; // Estimated max height
       const padding = 20;
+      const offset = 10; // Offset from cursor to avoid covering it
 
-      let x = element.clickX || window.innerWidth / 2;
-      let y = element.clickY || window.innerHeight / 2;
+      const clickX = element.clickX || window.innerWidth / 2;
+      const clickY = element.clickY || window.innerHeight / 2;
 
-      // Adjust if modal would go off-screen on the right
+      let x = clickX + offset;
+      let y = clickY + offset;
+
+      // Check if modal would overflow on the right edge
       if (x + modalWidth + padding > window.innerWidth) {
-        x = window.innerWidth - modalWidth - padding;
+        // Position to the left of the cursor instead
+        x = clickX - modalWidth - offset;
+
+        // If still overflowing on the left, align to right edge with padding
+        if (x < padding) {
+          x = window.innerWidth - modalWidth - padding;
+        }
       }
 
-      // Adjust if modal would go off-screen on the bottom
+      // Check if modal would overflow on the bottom edge
       if (y + modalHeight > window.innerHeight) {
-        y = window.innerHeight - modalHeight - padding;
+        // Position above the cursor instead
+        y = clickY - modalHeight - offset;
+
+        // If still overflowing on top, align to bottom edge with padding
+        if (y < padding) {
+          y = window.innerHeight - modalHeight - padding;
+        }
       }
 
-      // Ensure minimum padding from top and left
-      x = Math.max(padding, x);
-      y = Math.max(padding, y);
+      // Final bounds check to ensure minimum padding from all edges
+      x = Math.max(padding, Math.min(x, window.innerWidth - modalWidth - padding));
+      y = Math.max(padding, Math.min(y, window.innerHeight - modalHeight - padding));
 
       return { x, y };
     };
@@ -237,13 +261,24 @@ export default function MapPage() {
             </div>
 
             <div className="pt-4 mt-4 border-t border-[#3f6053]/30">
-              <a
-                href={`/contribute?project=${encodeURIComponent(caravan.name)}`}
-                target="_blank"
-                className="block w-full py-2.5 px-4 bg-gradient-to-r from-[#F6FAF6] to-[#ffffff] text-[#2b4539] text-center rounded font-semibold text-sm uppercase tracking-wide hover:shadow-lg transition-all"
-              >
-                Contribute
-              </a>
+              {caravan.id === 'slush-2025' ? (
+                <a
+                  href="https://slush.teloshouse.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full py-2.5 px-4 bg-gradient-to-r from-[#F6FAF6] to-[#ffffff] text-[#2b4539] text-center rounded font-semibold text-sm uppercase tracking-wide hover:shadow-lg transition-all"
+                >
+                  See More
+                </a>
+              ) : (
+                <a
+                  href={`/contribute?project=${encodeURIComponent(caravan.name)}`}
+                  target="_blank"
+                  className="block w-full py-2.5 px-4 bg-gradient-to-r from-[#F6FAF6] to-[#ffffff] text-[#2b4539] text-center rounded font-semibold text-sm uppercase tracking-wide hover:shadow-lg transition-all"
+                >
+                  Contribute
+                </a>
+              )}
             </div>
           </div>
         </MiniBrowserModal>
@@ -437,11 +472,31 @@ export default function MapPage() {
       setSelectedTelosProperty(null);
     };
 
-    // Calculate position with slight offset for stacking
-    const iframePosition = showTelosIframe ? {
-      x: modalPosition.x + 30,
-      y: modalPosition.y + 30
-    } : modalPosition;
+    // Calculate position with slight offset for stacking, ensuring it stays on screen
+    const iframePosition = showTelosIframe ? (() => {
+      const padding = 20;
+      const iframeWidth = 1200;
+      const iframeHeight = window.innerHeight * 0.9; // 90vh
+
+      let x = modalPosition.x + 30;
+      let y = modalPosition.y + 30;
+
+      // Check if iframe would go off-screen on the right
+      if (x + iframeWidth + padding > window.innerWidth) {
+        x = window.innerWidth - iframeWidth - padding;
+      }
+
+      // Check if iframe would go off-screen on the bottom
+      if (y + iframeHeight > window.innerHeight) {
+        y = window.innerHeight - iframeHeight - padding;
+      }
+
+      // Ensure minimum padding from edges
+      x = Math.max(padding, x);
+      y = Math.max(padding, y);
+
+      return { x, y };
+    })() : modalPosition;
 
     // Show iframe view
     if (showTelosIframe) {
@@ -589,10 +644,10 @@ export default function MapPage() {
 
   return (
     <div className="relative h-screen overflow-hidden bg-[#000000]">
-      {/* Left Sidebar with Title and Filters - Top Half Only */}
-      <div className="fixed top-0 left-0 w-80 bg-[#000000] border-r border-[#3f6053]/30 z-[9999] flex flex-col" style={{ height: '50vh' }}>
+      {/* Left Sidebar with Title and Filters - Adjacent */}
+      <div className="fixed top-0 left-0 w-80 bg-[#000000] border-r border-[#3f6053]/30 z-[9999] flex flex-col overflow-y-auto" style={{ maxHeight: '80vh' }}>
         {/* Title Section */}
-        <div className="p-6 border-b border-[#3f6053]/40 flex-shrink-0">
+        <div className="p-6 border-b border-[#3f6053]/30">
           <div className="mb-4 flex items-center justify-center">
             <div className="flex items-center gap-1 px-4 py-2">
               <div className="h-px bg-[#3f6053]/40 flex-1 w-8"></div>
@@ -608,7 +663,7 @@ export default function MapPage() {
               textShadow: '0 2px 8px rgba(0,0,0,0.5)'
             }}
           >
-            TELOS LEAGUE
+            TELOS GUILD NETWORK
           </h1>
           <p className="text-xs text-white/80 text-center uppercase tracking-wider mb-3">
             Trad-Digital Network
@@ -621,7 +676,7 @@ export default function MapPage() {
           </p>
 
           {isAdmin && (
-            <div className="mb-0">
+            <div className="mt-6">
               <button
                 onClick={() => router.push('/admin')}
                 className="w-full py-2 text-xs uppercase tracking-wide rounded bg-[#F6FAF6]/20 text-[#F6FAF6] hover:bg-[#F6FAF6]/30 transition-all border border-[#F6FAF6]/50"
@@ -632,8 +687,8 @@ export default function MapPage() {
           )}
         </div>
 
-        {/* Filters Section */}
-        <div className="flex-1 overflow-y-auto p-6 min-h-0">
+        {/* Filters Section - Adjacent to Title */}
+        <div className="p-6">
           <div className="bg-gradient-to-br from-[#2b4539]/20 to-[#3f6053]/20 border border-[#3f6053]/30 rounded-lg backdrop-blur-sm p-4">
             <h3 className="text-xs uppercase tracking-wider text-[#F6FAF6] mb-3 font-serif">
               Map Filters
@@ -672,20 +727,14 @@ export default function MapPage() {
         </div>
       </div>
 
-      {/* Reset Camera Button */}
-      <button
-        onClick={() => {
-          const mapContainer = document.querySelector('.mapboxgl-map');
-          if (mapContainer) {
-            const event = new CustomEvent('resetCamera');
-            mapContainer.dispatchEvent(event);
-          }
-        }}
-        className="fixed top-4 left-4 z-[9998] bg-[#000000]/90 backdrop-blur-sm p-3 rounded-lg shadow-2xl border-2 border-[#F6FAF6]/50 hover:bg-[#000000]/95 hover:border-[#F6FAF6] transition-all"
-        title="Reset camera to default view"
-      >
-        <HiHome className="text-white text-xl" />
-      </button>
+      {/* Zoom Controls */}
+      {zoomControls && (
+        <ZoomControls
+          onZoomIn={zoomControls.zoomIn}
+          onZoomOut={zoomControls.zoomOut}
+          onResetView={zoomControls.resetView}
+        />
+      )}
 
       {/* Map Legend */}
       <div className="fixed bottom-4 right-4 z-[9997] max-w-[90vw] md:max-w-none">
@@ -734,6 +783,19 @@ export default function MapPage() {
         </div>
       </div>
 
+      {/* Loading Screen */}
+      {!mapLoaded && (
+        <div className="fixed inset-0 z-[9998] flex flex-col items-center justify-center bg-[#000000]">
+          <img
+            src="/telos-house-logo.png"
+            alt="Telos House"
+            className="w-32 h-32 mb-6 animate-pulse"
+          />
+          <h2 className="font-serif text-2xl text-white mb-2">Loading Map...</h2>
+          <p className="text-white/60 text-sm">Preparing your journey</p>
+        </div>
+      )}
+
       {/* Map - full screen */}
       <div className="h-full w-full">
         <GuildMap
@@ -747,6 +809,9 @@ export default function MapPage() {
           selectedElement={selectedElement}
           onElementClick={handleElementClick}
           isAuthenticated={isAuthenticated}
+          isModalOpen={!!selectedElement || showTelosModal || showPhotoGallery}
+          onMapLoaded={() => setMapLoaded(true)}
+          onZoomControlsReady={(controls) => setZoomControls(controls)}
         />
       </div>
 
@@ -774,6 +839,9 @@ export default function MapPage() {
           onLogout={handleLogout}
         />
       )}
+
+      {/* Bulletin Board */}
+      {isAuthenticated && <BulletinBoard />}
     </div>
   );
 }
