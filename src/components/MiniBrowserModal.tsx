@@ -1,7 +1,6 @@
 'use client';
 
 import { ReactNode } from 'react';
-import { HiX } from 'react-icons/hi';
 
 interface MiniBrowserModalProps {
   title: string;
@@ -22,7 +21,7 @@ export default function MiniBrowserModal({
 }: MiniBrowserModalProps) {
   return (
     <div
-      className="fixed z-[10001] bg-[#0a0e0a] rounded border border-[#00ff41]/30 shadow-[0_0_30px_rgba(0,255,65,0.15)] overflow-hidden"
+      className="fixed z-[10001] bg-[#1e1e1e] rounded-none border border-[#3f3f46] shadow-2xl overflow-hidden"
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
@@ -30,35 +29,28 @@ export default function MiniBrowserModal({
         maxHeight: height === 'auto' ? '80vh' : height,
       }}
     >
-      {/* Dark terminal-style title bar */}
-      <div className="flex items-center justify-between px-4 py-2 bg-[#050805] border-b border-[#00ff41]/20 select-none">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1">
-            <div className="w-2 h-2 bg-[#00ff41] rounded-sm animate-pulse" />
-            <div className="w-2 h-2 bg-[#00ff41]/40 rounded-sm" />
-            <div className="w-2 h-2 bg-[#00ff41]/40 rounded-sm" />
-          </div>
-          <div className="h-3 w-px bg-[#00ff41]/30" />
-          <h3 className="font-mono text-xs text-[#00ff41] tracking-wider uppercase">
+      {/* Windows-style title bar */}
+      <div className="flex items-center justify-between px-3 py-2 bg-[#2d2d30] border-b border-[#3f3f46] select-none">
+        <div className="flex items-center gap-2">
+          <h3 className="text-xs text-[#cccccc] font-normal">
             {title}
           </h3>
         </div>
         <button
           onClick={onClose}
-          className="text-[#00ff41]/70 hover:text-[#00ff41] hover:bg-[#00ff41]/10 transition-all p-1 rounded"
+          className="w-11 h-7 flex items-center justify-center hover:bg-[#e81123] text-[#cccccc] hover:text-white transition-colors"
           title="Close"
         >
-          <HiX className="text-sm" />
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0.5 0.5L9.5 9.5M9.5 0.5L0.5 9.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
+          </svg>
         </button>
       </div>
 
-      {/* Content area with terminal styling */}
-      <div className="overflow-y-auto max-h-[calc(80vh-40px)] p-6 bg-[#0a0e0a]">
+      {/* Content area */}
+      <div className="overflow-y-auto max-h-[calc(80vh-31px)] p-6 bg-[#1e1e1e] text-[#cccccc]">
         {children}
       </div>
-
-      {/* Scan line effect */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-[#00ff41]/5 to-transparent animate-scan" />
     </div>
   );
 }

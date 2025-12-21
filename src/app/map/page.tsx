@@ -94,17 +94,40 @@ export default function MapPage() {
     router.push('/login');
   };
 
-  const handleElementClick = (element: MapElement) => {
+  const handleElementClick = (element: MapElement & { clickX?: number; clickY?: number }) => {
+    // Calculate modal position near click location
+    const calculateModalPosition = () => {
+      if (typeof window === 'undefined') return { x: 0, y: 0 };
+
+      const modalWidth = 500;
+      const modalHeight = 600;
+      const padding = 20;
+
+      let x = element.clickX || window.innerWidth / 2;
+      let y = element.clickY || window.innerHeight / 2;
+
+      // Adjust if modal would go off-screen on the right
+      if (x + modalWidth + padding > window.innerWidth) {
+        x = window.innerWidth - modalWidth - padding;
+      }
+
+      // Adjust if modal would go off-screen on the bottom
+      if (y + modalHeight > window.innerHeight) {
+        y = window.innerHeight - modalHeight - padding;
+      }
+
+      // Ensure minimum padding from top and left
+      x = Math.max(padding, x);
+      y = Math.max(padding, y);
+
+      return { x, y };
+    };
+
     // Check if it's a Telos House
     if (element.type === 'property') {
       const property = element.data as Property;
       if (property.id === 'prop-telos' || property.id === 'prop-telos-sf' || property.id === 'prop-telos-shenzhen') {
-        if (typeof window !== 'undefined') {
-          setModalPosition({
-            x: window.innerWidth - 300,
-            y: window.innerHeight / 2,
-          });
-        }
+        setModalPosition(calculateModalPosition());
         setSelectedTelosProperty(property);
         setTelosHouseUrl('https://house-eight-gamma.vercel.app/');
         setShowTelosIframe(false);
@@ -117,12 +140,7 @@ export default function MapPage() {
     if (element.type === 'caravan') {
       const caravan = element.data as any;
       if (caravan.selectedWaypoint) {
-        if (typeof window !== 'undefined') {
-          setModalPosition({
-            x: window.innerWidth - 300,
-            y: window.innerHeight / 2,
-          });
-        }
+        setModalPosition(calculateModalPosition());
         // Show photo gallery for this waypoint
         setPhotoGalleryLocation(caravan.selectedWaypoint.name);
         setShowPhotoGallery(true);
@@ -130,13 +148,8 @@ export default function MapPage() {
       }
     }
 
-    // Set modal position (right side of screen, centered vertically)
-    if (typeof window !== 'undefined') {
-      setModalPosition({
-        x: window.innerWidth - 300,
-        y: window.innerHeight / 2,
-      });
-    }
+    // Default modal position
+    setModalPosition(calculateModalPosition());
 
     setSelectedElement(element);
   };
@@ -760,6 +773,7 @@ export default function MapPage() {
           locationName={photoGalleryLocation}
           onClose={() => setShowPhotoGallery(false)}
           isAdmin={isAdmin}
+          position={modalPosition}
         />
       )}
 

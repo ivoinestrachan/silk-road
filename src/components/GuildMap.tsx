@@ -14,7 +14,7 @@ interface GuildMapProps {
   properties: Property[];
   selectedCaravan?: Caravan | null;
   selectedElement?: { type: 'caravan' | 'member' | 'property'; data: Caravan | GuildMember | Property } | null;
-  onElementClick?: (element: { type: 'caravan' | 'member' | 'property'; data: Caravan | GuildMember | Property }) => void;
+  onElementClick?: (element: { type: 'caravan' | 'member' | 'property'; data: Caravan | GuildMember | Property; clickX?: number; clickY?: number }) => void;
   isAuthenticated?: boolean;
 }
 
@@ -490,31 +490,31 @@ function GuildMap({
         div.style.filter = 'drop-shadow(0 0 2px rgba(0,0,0,0.9))';
         markerElement = div;
       } else if (property.id === 'prop-telos') {
-        // Original Telos House - larger with gold glow
+        // Original Telos House - larger
         const img = document.createElement('img');
         img.src = '/telos-house-logo.png';
         img.style.width = '56px';
         img.style.height = '56px';
         img.style.cursor = 'pointer';
-        img.style.filter = 'drop-shadow(0 0 4px #ffd700) drop-shadow(0 0 8px #ffd700) drop-shadow(0 0 2px rgba(0,0,0,0.9))';
+        img.style.filter = 'drop-shadow(0 0 2px rgba(0,0,0,0.9))';
         markerElement = img;
       } else if (property.id === 'prop-telos-sf') {
-        // SF Telos House with blue/purple glow
+        // SF Telos House
         const img = document.createElement('img');
         img.src = '/telos-house-logo.png';
         img.style.width = '48px';
         img.style.height = '48px';
         img.style.cursor = 'pointer';
-        img.style.filter = 'drop-shadow(0 0 3px #6366f1) drop-shadow(0 0 6px #6366f1) drop-shadow(0 0 2px rgba(0,0,0,0.9))';
+        img.style.filter = 'drop-shadow(0 0 2px rgba(0,0,0,0.9))';
         markerElement = img;
       } else if (property.id === 'prop-telos-shenzhen') {
-        // Shenzhen Telos House with orange glow (upcoming)
+        // Shenzhen Telos House (upcoming)
         const img = document.createElement('img');
         img.src = '/telos-house-logo.png';
         img.style.width = '40px';
         img.style.height = '40px';
         img.style.cursor = 'pointer';
-        img.style.filter = 'drop-shadow(0 0 3px #f97316) drop-shadow(0 0 6px #f97316) drop-shadow(0 0 2px rgba(0,0,0,0.9)) grayscale(30%)';
+        img.style.filter = 'drop-shadow(0 0 2px rgba(0,0,0,0.9)) grayscale(30%)';
         img.style.opacity = '0.85';
         markerElement = img;
       } else {
@@ -568,9 +568,9 @@ function GuildMap({
       });
 
       if (onElementClick) {
-        markerElement.addEventListener('click', () => {
+        markerElement.addEventListener('click', (e: MouseEvent) => {
           hideTooltip();
-          onElementClick({ type: 'property', data: property });
+          onElementClick({ type: 'property', data: property, clickX: e.clientX, clickY: e.clientY });
         });
       }
 
@@ -853,7 +853,7 @@ function GuildMap({
         });
 
         // Add click handler for photo gallery
-        markerEl.addEventListener('click', (e) => {
+        markerEl.addEventListener('click', (e: MouseEvent) => {
           e.stopPropagation();
           hideTooltip();
           if (onElementClick) {
