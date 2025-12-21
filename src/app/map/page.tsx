@@ -437,46 +437,48 @@ export default function MapPage() {
       setSelectedTelosProperty(null);
     };
 
+    // Calculate position with slight offset for stacking
+    const iframePosition = showTelosIframe ? {
+      x: modalPosition.x + 30,
+      y: modalPosition.y + 30
+    } : modalPosition;
+
     // Show iframe view
     if (showTelosIframe) {
       return (
-        <div className="fixed inset-0 z-[10001] flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={handleCloseModal}>
-          <div className="bg-gradient-to-br from-[#2c3e2e] to-[#1a3a2e] rounded-lg border-2 border-[#F6FAF6]/30 max-w-6xl w-full mx-4 shadow-2xl overflow-hidden" style={{ height: '90vh' }} onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between p-4 border-b border-[#F6FAF6]/30 bg-[#2c3e2e]/80">
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setShowTelosIframe(false)}
-                  className="text-[#F6FAF6]/70 hover:text-[#F6FAF6] text-sm flex items-center gap-2 transition-colors"
-                >
-                  ← Back to Info
-                </button>
-                <div className="h-6 w-px bg-[#F6FAF6]/30"></div>
-                <img
-                  src="/telos-house-logo.png"
-                  alt="Telos House"
-                  className="w-10 h-10 object-contain"
-                />
-                <div>
-                  <h2 className="font-serif text-xl text-[#F6FAF6]">{selectedTelosProperty.name}</h2>
-                  <p className="text-xs text-[#F6FAF6]/70 uppercase tracking-widest">Guild Headquarters</p>
-                </div>
-              </div>
-              <button
-                onClick={handleCloseModal}
-                className="text-[#F6FAF6] hover:text-white text-2xl leading-none transition-colors"
-              >
-                &times;
-              </button>
-            </div>
-            <iframe
-              src={telosHouseUrl}
-              className="w-full h-full"
-              style={{ height: 'calc(90vh - 80px)' }}
-              title="Telos House"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        <MiniBrowserModal
+          title={`${selectedTelosProperty.name} - Virtual Tour`}
+          onClose={handleCloseModal}
+          position={iframePosition}
+          width="1200px"
+          height="90vh"
+        >
+          <div className="flex items-center gap-3 mb-4 pb-3 border-b border-[#3f3f46]">
+            <button
+              onClick={() => setShowTelosIframe(false)}
+              className="text-[#888888] hover:text-[#cccccc] text-sm flex items-center gap-2 transition-colors"
+            >
+              ← Back to Info
+            </button>
+            <div className="h-4 w-px bg-[#3f3f46]"></div>
+            <img
+              src="/telos-house-logo.png"
+              alt="Telos House"
+              className="w-8 h-8 object-contain"
             />
+            <div>
+              <p className="text-sm text-[#cccccc] font-semibold">{selectedTelosProperty.name}</p>
+              <p className="text-xs text-[#888888]">Virtual Tour</p>
+            </div>
           </div>
-        </div>
+          <iframe
+            src={telosHouseUrl}
+            className="w-full rounded border border-[#3f3f46]"
+            style={{ height: 'calc(90vh - 150px)' }}
+            title="Telos House"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          />
+        </MiniBrowserModal>
       );
     }
 
@@ -485,116 +487,103 @@ export default function MapPage() {
     const isHeadquarters = selectedTelosProperty.id === 'prop-telos';
 
     let statusBadge = null;
-    let borderGlow = 'border-[#ffd700]';
+    let statusText = 'ACTIVE';
+    let statusColor = '#6366f1';
 
     if (isHeadquarters) {
+      statusText = 'HEADQUARTERS';
+      statusColor = '#ffd700';
       statusBadge = (
-        <div className="px-3 py-1 bg-gradient-to-r from-[#ffd700] to-[#ffed4e] text-black text-xs font-bold rounded-full shadow-lg">
+        <div className="px-3 py-1 bg-[#ffd700] text-black text-xs font-bold rounded">
           HEADQUARTERS
         </div>
       );
-      borderGlow = 'border-[#ffd700] shadow-[0_0_20px_rgba(255,215,0,0.3)]';
     } else if (isUpcoming) {
+      statusText = 'UPCOMING';
+      statusColor = '#f97316';
       statusBadge = (
-        <div className="px-3 py-1 bg-gradient-to-r from-[#f97316] to-[#fb923c] text-white text-xs font-bold rounded-full shadow-lg">
+        <div className="px-3 py-1 bg-[#f97316] text-white text-xs font-bold rounded">
           UPCOMING
         </div>
       );
-      borderGlow = 'border-[#f97316] shadow-[0_0_20px_rgba(249,115,22,0.3)]';
     } else {
       statusBadge = (
-        <div className="px-3 py-1 bg-gradient-to-r from-[#6366f1] to-[#818cf8] text-white text-xs font-bold rounded-full shadow-lg">
+        <div className="px-3 py-1 bg-[#6366f1] text-white text-xs font-bold rounded">
           ACTIVE
         </div>
       );
-      borderGlow = 'border-[#6366f1] shadow-[0_0_20px_rgba(99,102,241,0.3)]';
     }
 
     // Show info card view
     return (
-      <div className="fixed inset-0 z-[10001] flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={handleCloseModal}>
-        <div className={`bg-gradient-to-br from-[#1a1a1a] via-[#2b4539] to-[#1a1a1a] p-8 rounded-xl border-2 ${borderGlow} max-w-2xl w-full mx-4 shadow-2xl relative overflow-hidden`} onClick={(e) => e.stopPropagation()}>
-          {/* Background glow effect */}
-          <div className="absolute inset-0 bg-gradient-to-br from-transparent via-[#3f6053]/20 to-transparent pointer-events-none" />
-
+      <MiniBrowserModal
+        title={`${selectedTelosProperty.name} - Location Details`}
+        onClose={handleCloseModal}
+        position={modalPosition}
+        width="700px"
+        height="auto"
+      >
+        <div className="space-y-6">
           {/* Header section */}
-          <div className="relative z-10 flex items-start justify-between mb-6">
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <img
-                  src="/telos-house-logo.png"
-                  alt="Telos House"
-                  className="w-20 h-20 object-contain"
-                  style={{
-                    filter: isHeadquarters
-                      ? 'drop-shadow(0 0 8px #ffd700)'
-                      : isUpcoming
-                      ? 'drop-shadow(0 0 8px #f97316)'
-                      : 'drop-shadow(0 0 8px #6366f1)'
-                  }}
-                />
-              </div>
-              <div className="space-y-2">
-                <h3 className="font-serif text-3xl text-[#F6FAF6] font-bold tracking-tight">
-                  {selectedTelosProperty.name}
-                </h3>
-                <p className="text-sm text-[#F6FAF6]/80 flex items-center gap-2">
-                  <span className="text-lg">📍</span>
-                  {selectedTelosProperty.location.name}
-                </p>
-                {statusBadge}
-              </div>
+          <div className="flex items-start gap-4 pb-4 border-b border-[#3f3f46]">
+            <img
+              src="/telos-house-logo.png"
+              alt="Telos House"
+              className="w-16 h-16 object-contain"
+            />
+            <div className="flex-1">
+              <h3 className="text-xl font-semibold text-[#cccccc] mb-2">
+                {selectedTelosProperty.name}
+              </h3>
+              <p className="text-sm text-[#888888] mb-2">
+                {selectedTelosProperty.location.name}
+              </p>
+              {statusBadge}
             </div>
-            <button
-              onClick={handleCloseModal}
-              className="text-[#F6FAF6]/70 hover:text-[#F6FAF6] text-3xl leading-none transition-colors"
-            >
-              &times;
-            </button>
           </div>
 
           {/* Description */}
-          <div className="relative z-10 mb-6">
-            <p className="text-[#F6FAF6]/90 text-lg leading-relaxed">
+          <div>
+            <p className="text-[#cccccc] leading-relaxed">
               {selectedTelosProperty.description?.replace('[UPCOMING]', '').trim() || 'No description available'}
             </p>
           </div>
 
           {/* Stats grid */}
-          <div className="relative z-10 grid grid-cols-2 gap-4 mb-6">
-            <div className="bg-black/30 backdrop-blur-sm p-4 rounded-lg border border-[#3f6053]/40">
-              <p className="text-[#F6FAF6]/60 text-xs uppercase tracking-wider mb-1">Type</p>
-              <p className="text-[#F6FAF6] font-semibold text-xl capitalize">{selectedTelosProperty.type}</p>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-[#252526] p-4 rounded border border-[#3f3f46]">
+              <p className="text-[#888888] text-xs uppercase tracking-wider mb-1">Type</p>
+              <p className="text-[#cccccc] font-semibold text-lg capitalize">{selectedTelosProperty.type}</p>
             </div>
-            <div className="bg-black/30 backdrop-blur-sm p-4 rounded-lg border border-[#3f6053]/40">
-              <p className="text-[#F6FAF6]/60 text-xs uppercase tracking-wider mb-1">Capacity</p>
-              <p className="text-[#F6FAF6] font-semibold text-xl">{selectedTelosProperty.capacity} people</p>
+            <div className="bg-[#252526] p-4 rounded border border-[#3f3f46]">
+              <p className="text-[#888888] text-xs uppercase tracking-wider mb-1">Capacity</p>
+              <p className="text-[#cccccc] font-semibold text-lg">{selectedTelosProperty.capacity} people</p>
             </div>
           </div>
 
           {/* Amenities section */}
-          <div className="relative z-10">
-            <p className="text-[#F6FAF6]/80 text-sm uppercase tracking-wider mb-3 font-semibold">Amenities & Features</p>
-            <div className="flex flex-wrap gap-3 mb-6">
+          <div>
+            <p className="text-[#888888] text-sm uppercase tracking-wider mb-3 font-semibold">Amenities & Features</p>
+            <div className="flex flex-wrap gap-2 mb-6">
               {selectedTelosProperty.amenities?.map((amenity) => (
                 <span
                   key={amenity}
-                  className="px-4 py-2 bg-gradient-to-r from-[#2b4539] to-[#3f6053] text-[#F6FAF6] text-sm font-medium rounded-lg border border-[#3f6053]/50 shadow-md hover:shadow-lg transition-shadow"
+                  className="px-3 py-1.5 bg-[#2d2d30] text-[#cccccc] text-sm rounded border border-[#3f3f46] hover:border-[#6b6b6b] transition-colors"
                 >
                   {amenity}
                 </span>
-              )) || <p className="text-[#F6FAF6]/60 text-sm">No amenities listed</p>}
+              )) || <p className="text-[#888888] text-sm">No amenities listed</p>}
             </div>
 
             <button
               onClick={() => setShowTelosIframe(true)}
-              className="w-full py-3 bg-gradient-to-r from-[#F6FAF6] to-[#ffffff] text-[#2b4539] rounded font-semibold text-sm uppercase tracking-wide hover:shadow-lg transition-all flex items-center justify-center gap-2"
+              className="w-full py-3 bg-[#0e639c] hover:bg-[#1177bb] text-white rounded font-semibold text-sm uppercase tracking-wide transition-all flex items-center justify-center gap-2"
             >
               View House <HiArrowRight className="text-lg" />
             </button>
           </div>
         </div>
-      </div>
+      </MiniBrowserModal>
     );
   };
 
