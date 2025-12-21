@@ -61,7 +61,7 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a1a1a] p-6">
+    <div className="min-h-screen bg-[#0a1a1a] p-6 overflow-auto">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -145,7 +145,7 @@ export default function AdminPage() {
             </div>
           </div>
         ) : (
-          <div className="bg-gradient-to-br from-[#0d2626] to-[#0a1f1f] rounded-lg border border-teal-800/40 p-6">
+          <div className="bg-gradient-to-br from-[#0d2626] to-[#0a1f1f] rounded-lg border border-teal-800/40 p-6 pb-24">
             <h2 className="text-xl font-serif text-teal-100 mb-4">Add New Map Element</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>

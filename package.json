@@ -11,6 +11,7 @@
     "@types/leaflet": "^1.9.21",
     "@types/mapbox-gl": "^3.4.1",
     "cesium": "^1.136.0",
+    "googleapis": "^169.0.0",
     "gsap": "^3.14.2",
     "leaflet": "^1.9.4",
     "mapbox-gl": "^3.17.0",

@@ -29,6 +29,53 @@ function GuildMap({
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
+  const tooltipRef = useRef<HTMLDivElement | null>(null);
+
+  // Create custom tooltip element
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const tooltip = document.createElement('div');
+    tooltip.className = 'custom-map-tooltip';
+    tooltip.style.position = 'fixed';
+    tooltip.style.pointerEvents = 'none';
+    tooltip.style.zIndex = '10000';
+    tooltip.style.padding = '8px 12px';
+    tooltip.style.background = 'linear-gradient(135deg, #2b4539, #3f6053)';
+    tooltip.style.color = '#F6FAF6';
+    tooltip.style.borderRadius = '6px';
+    tooltip.style.fontSize = '12px';
+    tooltip.style.fontWeight = '600';
+    tooltip.style.opacity = '0';
+    tooltip.style.transition = 'opacity 0.2s ease';
+    tooltip.style.border = '1px solid #3f6053';
+    tooltip.style.boxShadow = '0 4px 12px rgba(0,0,0,0.4)';
+    tooltip.style.whiteSpace = 'nowrap';
+    document.body.appendChild(tooltip);
+    tooltipRef.current = tooltip;
+
+    return () => {
+      if (tooltipRef.current) {
+        document.body.removeChild(tooltipRef.current);
+        tooltipRef.current = null;
+      }
+    };
+  }, []);
+
+  // Helper to show tooltip
+  const showTooltip = (text: string, x: number, y: number) => {
+    if (!tooltipRef.current) return;
+    tooltipRef.current.innerHTML = text;
+    tooltipRef.current.style.left = `${x + 15}px`;
+    tooltipRef.current.style.top = `${y - 10}px`;
+    tooltipRef.current.style.opacity = '1';
+  };
+
+  // Helper to hide tooltip
+  const hideTooltip = () => {
+    if (!tooltipRef.current) return;
+    tooltipRef.current.style.opacity = '0';
+  };
 
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
@@ -51,6 +98,7 @@ function GuildMap({
       bearing: 0,
       antialias: true,
       projection: 'mercator',
+      attributionControl: false, // Remove attribution control
     });
 
     mapRef.current = map;
@@ -226,6 +274,24 @@ function GuildMap({
       renderMapElements();
     });
 
+    // Add event listener for reset camera button
+    const handleResetCamera = () => {
+      if (mapRef.current) {
+        mapRef.current.flyTo({
+          center: [13.405, 52.52],
+          zoom: 4.5,
+          pitch: 0,
+          bearing: 0,
+          duration: 1500,
+          essential: true
+        });
+      }
+    };
+
+    if (mapContainerRef.current) {
+      mapContainerRef.current.addEventListener('resetCamera', handleResetCamera);
+    }
+
     // Dynamic 3D terrain based on zoom level
     map.on('zoom', () => {
       const zoom = map.getZoom();
@@ -253,6 +319,11 @@ function GuildMap({
     });
 
     return () => {
+      // Cleanup event listener
+      if (mapContainerRef.current) {
+        mapContainerRef.current.removeEventListener('resetCamera', handleResetCamera);
+      }
+
       // Cleanup markers
       markersRef.current.forEach(marker => marker.remove());
       markersRef.current = [];
@@ -268,6 +339,35 @@ function GuildMap({
     renderMapElements();
   }, [caravans, members, properties]);
 
+  // Fetch actual driving route from Mapbox Directions API
+  const fetchDrivingRoute = async (waypoints: Array<{ lng: number; lat: number }>) => {
+    try {
+      const coordinates = waypoints.map(wp => `${wp.lng},${wp.lat}`).join(';');
+      const response = await fetch(
+        `https://api.mapbox.com/directions/v5/mapbox/driving/${coordinates}?` +
+        `geometries=geojson&` +
+        `overview=full&` +
+        `steps=true&` +
+        `access_token=${mapboxgl.accessToken}`
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch route');
+      }
+
+      const data = await response.json();
+
+      if (data.routes && data.routes.length > 0) {
+        return data.routes[0].geometry;
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Error fetching driving route:', error);
+      return null;
+    }
+  };
+
   const renderMapElements = () => {
     const map = mapRef.current;
     if (!map) return;
@@ -275,6 +375,27 @@ function GuildMap({
     // Clear existing markers
     markersRef.current.forEach(marker => marker.remove());
     markersRef.current = [];
+
+    // Clear existing route layers and sources
+    const style = map.getStyle();
+    if (style && style.layers) {
+      style.layers.forEach((layer) => {
+        if (layer.id.startsWith('route-')) {
+          if (map.getLayer(layer.id)) {
+            map.removeLayer(layer.id);
+          }
+        }
+      });
+    }
+    if (style && style.sources) {
+      Object.keys(style.sources).forEach((sourceId) => {
+        if (sourceId.startsWith('route-')) {
+          if (map.getSource(sourceId)) {
+            map.removeSource(sourceId);
+          }
+        }
+      });
+    }
 
     // Helper function to create emoji markers with proper positioning
     const createEmojiMarker = (emoji: string, size: number = 32) => {
@@ -292,16 +413,18 @@ function GuildMap({
     };
 
     // Helper function to create clean white circle nodes (6-8px)
-    const createIconMarker = (locationName: string = '') => {
+    const createIconMarker = (locationName: string = '', showHighlight: boolean = true) => {
       // Wrapper container with fixed size to prevent marker anchor shifts
       const container = document.createElement('div');
-      container.style.width = '12px'; // Fixed container size
-      container.style.height = '12px';
+      container.style.width = '16px'; // Fixed container size
+      container.style.height = '16px';
       container.style.display = 'flex';
       container.style.alignItems = 'center';
       container.style.justifyContent = 'center';
       container.style.cursor = 'pointer';
-      container.title = locationName; // Hover shows location
+      container.style.position = 'absolute';
+      container.style.transform = 'translate(-50%, -50%)'; // Center the marker
+      container.style.pointerEvents = 'auto';
 
       // Inner circle that scales
       const circle = document.createElement('div');
@@ -309,18 +432,45 @@ function GuildMap({
       circle.style.height = '8px';
       circle.style.borderRadius = '50%';
       circle.style.backgroundColor = '#ffffff'; // Clean white circles
-      circle.style.transition = 'transform 0.2s';
+      circle.style.transition = 'all 0.2s ease';
       circle.style.transformOrigin = 'center center';
       circle.style.willChange = 'transform';
+      circle.style.position = 'relative';
+      circle.style.zIndex = '1';
+
+      // Add highlight ring on hover
+      if (showHighlight) {
+        const highlightRing = document.createElement('div');
+        highlightRing.style.position = 'absolute';
+        highlightRing.style.width = '16px';
+        highlightRing.style.height = '16px';
+        highlightRing.style.borderRadius = '50%';
+        highlightRing.style.border = '2px solid #3f6053';
+        highlightRing.style.top = '50%';
+        highlightRing.style.left = '50%';
+        highlightRing.style.transform = 'translate(-50%, -50%) scale(0)';
+        highlightRing.style.opacity = '0';
+        highlightRing.style.transition = 'all 0.2s ease';
+        highlightRing.style.pointerEvents = 'none';
+        highlightRing.style.zIndex = '0';
+
+        container.appendChild(highlightRing);
+
+        container.addEventListener('mouseenter', () => {
+          circle.style.transform = 'scale(1.5)';
+          circle.style.backgroundColor = '#3f6053';
+          highlightRing.style.transform = 'translate(-50%, -50%) scale(1.2)';
+          highlightRing.style.opacity = '1';
+        });
+        container.addEventListener('mouseleave', () => {
+          circle.style.transform = 'scale(1)';
+          circle.style.backgroundColor = '#ffffff';
+          highlightRing.style.transform = 'translate(-50%, -50%) scale(0)';
+          highlightRing.style.opacity = '0';
+        });
+      }
 
       container.appendChild(circle);
-
-      container.addEventListener('mouseenter', () => {
-        circle.style.transform = 'scale(1.5)';
-      });
-      container.addEventListener('mouseleave', () => {
-        circle.style.transform = 'scale(1)';
-      });
 
       return container;
     };
@@ -330,35 +480,59 @@ function GuildMap({
       let markerElement: HTMLElement;
 
       if (property.type === 'supplier') {
-        // Supplier with factory emoji
-        markerElement = createEmojiMarker('🏭', 28);
+        // Supplier with factory icon (SVG)
+        const div = document.createElement('div');
+        div.innerHTML = `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 21h18v-2H3v2zM5 8h2v10H5V8zm5 0h2v10h-2V8zm5 0h2v10h-2V8zM3 6h18V4H3v2zm14 0h2v10h-2V6z" fill="#F6FAF6"/>
+          <path d="M7 3h2v2H7V3zm5 0h2v2h-2V3zm5 0h2v2h-2V3z" fill="#3f6053"/>
+        </svg>`;
+        div.style.cursor = 'pointer';
+        div.style.filter = 'drop-shadow(0 0 2px rgba(0,0,0,0.9))';
+        markerElement = div;
       } else if (property.id === 'prop-telos') {
-        // Original Telos House - larger
+        // Original Telos House - larger with gold glow
         const img = document.createElement('img');
         img.src = '/telos-house-logo.png';
         img.style.width = '56px';
         img.style.height = '56px';
         img.style.cursor = 'pointer';
-        img.style.filter = 'drop-shadow(0 0 2px rgba(0,0,0,0.9)) drop-shadow(0 0 4px rgba(0,0,0,0.6))';
+        img.style.filter = 'drop-shadow(0 0 4px #ffd700) drop-shadow(0 0 8px #ffd700) drop-shadow(0 0 2px rgba(0,0,0,0.9))';
+        markerElement = img;
+      } else if (property.id === 'prop-telos-sf') {
+        // SF Telos House with blue/purple glow
+        const img = document.createElement('img');
+        img.src = '/telos-house-logo.png';
+        img.style.width = '48px';
+        img.style.height = '48px';
+        img.style.cursor = 'pointer';
+        img.style.filter = 'drop-shadow(0 0 3px #6366f1) drop-shadow(0 0 6px #6366f1) drop-shadow(0 0 2px rgba(0,0,0,0.9))';
         markerElement = img;
       } else if (property.id === 'prop-telos-shenzhen') {
-        // Shenzhen Telos House with green glow
+        // Shenzhen Telos House with orange glow (upcoming)
         const img = document.createElement('img');
         img.src = '/telos-house-logo.png';
         img.style.width = '40px';
         img.style.height = '40px';
         img.style.cursor = 'pointer';
-        img.style.filter = 'drop-shadow(0 0 3px #3f6053) drop-shadow(0 0 6px #3f6053) drop-shadow(0 0 2px rgba(0,0,0,0.9))';
+        img.style.filter = 'drop-shadow(0 0 3px #f97316) drop-shadow(0 0 6px #f97316) drop-shadow(0 0 2px rgba(0,0,0,0.9)) grayscale(30%)';
+        img.style.opacity = '0.85';
         markerElement = img;
       } else {
-        // Generic property
-        markerElement = createEmojiMarker('🏛️', 28);
+        // Generic property with building icon (SVG)
+        const div = document.createElement('div');
+        div.innerHTML = `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 3L2 9v12h7v-6h6v6h7V9L12 3zm0 2.5L19 9v9h-3v-6H8v6H5V9l7-3.5z" fill="#F6FAF6"/>
+          <path d="M9 11h2v2H9v-2zm4 0h2v2h-2v-2z" fill="#3f6053"/>
+        </svg>`;
+        div.style.cursor = 'pointer';
+        div.style.filter = 'drop-shadow(0 0 2px rgba(0,0,0,0.9))';
+        markerElement = div;
       }
 
       const popup = new mapboxgl.Popup({ offset: 25, className: 'custom-popup' })
         .setHTML(`
           <div style="padding: 12px; background: linear-gradient(135deg, #2b4539, #3f6053); border-radius: 8px;">
-            <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #F6FAF6;">${property.type === 'supplier' ? '🏭' : '🏛️'} ${property.name}</h3>
+            <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #F6FAF6;">${property.name}</h3>
             <p style="margin: 4px 0; font-size: 13px; color: #ffffff;"><strong>Type:</strong> ${property.type.charAt(0).toUpperCase() + property.type.slice(1)}</p>
             ${property.description ? `<p style="margin: 4px 0; font-size: 13px; color: #ffffff;">${property.description}</p>` : ''}
             ${property.capacity ? `<p style="margin: 4px 0; font-size: 13px; color: #ffffff;"><strong>Capacity:</strong> ${property.capacity} members</p>` : ''}
@@ -372,11 +546,30 @@ function GuildMap({
         anchor: 'center', // Critical fix for emoji positioning!
       })
         .setLngLat([property.location.lng, property.location.lat])
-        .setPopup(popup)
         .addTo(map);
+
+      // Add tooltip on hover
+      markerElement.addEventListener('mouseenter', (e) => {
+        const tooltipText = property.type === 'supplier'
+          ? `${property.name}<br/><span style="font-size: 10px; opacity: 0.8;">Supplier Link</span>`
+          : `${property.name}<br/><span style="font-size: 10px; opacity: 0.8;">${property.type}</span>`;
+        showTooltip(tooltipText, e.clientX, e.clientY);
+      });
+
+      markerElement.addEventListener('mousemove', (e) => {
+        if (tooltipRef.current && tooltipRef.current.style.opacity === '1') {
+          tooltipRef.current.style.left = `${e.clientX + 15}px`;
+          tooltipRef.current.style.top = `${e.clientY - 10}px`;
+        }
+      });
+
+      markerElement.addEventListener('mouseleave', () => {
+        hideTooltip();
+      });
 
       if (onElementClick) {
         markerElement.addEventListener('click', () => {
+          hideTooltip();
           onElementClick({ type: 'property', data: property });
         });
       }
@@ -411,11 +604,30 @@ function GuildMap({
         anchor: 'center', // Critical fix for emoji positioning!
       })
         .setLngLat([member.location.lng, member.location.lat])
-        .setPopup(popup)
         .addTo(map);
+
+      // Add tooltip on hover
+      markerElement.addEventListener('mouseenter', (e) => {
+        const tooltipText = isPartnerVC
+          ? `💼 ${member.name}<br/><span style="font-size: 10px; opacity: 0.8;">Partner VC</span>`
+          : `👤 ${member.name}<br/><span style="font-size: 10px; opacity: 0.8;">${member.passportId}</span>`;
+        showTooltip(tooltipText, e.clientX, e.clientY);
+      });
+
+      markerElement.addEventListener('mousemove', (e) => {
+        if (tooltipRef.current && tooltipRef.current.style.opacity === '1') {
+          tooltipRef.current.style.left = `${e.clientX + 15}px`;
+          tooltipRef.current.style.top = `${e.clientY - 10}px`;
+        }
+      });
+
+      markerElement.addEventListener('mouseleave', () => {
+        hideTooltip();
+      });
 
       if (onElementClick) {
         markerElement.addEventListener('click', () => {
+          hideTooltip();
           onElementClick({ type: 'member', data: member });
         });
       }
@@ -489,56 +701,84 @@ function GuildMap({
             ? '#ffa500'
             : '#c41e3a';
 
-      // Create route line
-      const routeCoordinates = caravan.route.waypoints.map(wp => [wp.lng, wp.lat]);
-
-      // Add route line to map
+      // Add route line to map using Directions API
       const routeId = `route-${caravan.id}`;
+      const routeHighlightId = `route-highlight-${caravan.id}`;
 
-      if (!map.getSource(routeId)) {
-        map.addSource(routeId, {
-          type: 'geojson',
-          data: {
-            type: 'Feature',
-            properties: {},
-            geometry: {
-              type: 'LineString',
-              coordinates: routeCoordinates,
-            },
-          },
-        });
+      // Fetch and render the actual driving route
+      fetchDrivingRoute(caravan.route.waypoints).then((geometry) => {
+        if (!geometry || !map.getSource(routeId)) {
+          // Fallback to straight lines if API fails
+          const fallbackCoordinates = caravan.route.waypoints.map(wp => [wp.lng, wp.lat]);
+          const fallbackGeometry = {
+            type: 'LineString' as const,
+            coordinates: fallbackCoordinates,
+          };
 
-        map.addLayer({
-          id: routeId,
-          type: 'line',
-          source: routeId,
-          layout: {
-            'line-join': 'round',
-            'line-cap': 'round',
-          },
-          paint: {
-            'line-color': routeColor,
-            'line-width': 2,
-            'line-opacity': 0.8,
-            'line-dasharray': [4, 4], // Dashed line (4px line, 4px gap)
-          },
-        });
+          if (!map.getSource(routeId)) {
+            map.addSource(routeId, {
+              type: 'geojson',
+              lineMetrics: true,
+              data: {
+                type: 'Feature',
+                properties: { color: routeColor },
+                geometry: geometry || fallbackGeometry,
+              },
+            });
 
-        // Add interactivity to route
-        map.on('click', routeId, () => {
-          if (onElementClick) {
-            onElementClick({ type: 'caravan', data: caravan });
+            // Base route layer
+            map.addLayer({
+              id: routeId,
+              type: 'line',
+              source: routeId,
+              layout: {
+                'line-join': 'round',
+                'line-cap': 'round',
+              },
+              paint: {
+                'line-color': routeColor,
+                'line-width': 2,
+                'line-opacity': 0.8,
+                'line-dasharray': [4, 4],
+              },
+            });
+
+            // Highlight layer for hover
+            map.addLayer({
+              id: routeHighlightId,
+              type: 'line',
+              source: routeId,
+              layout: {
+                'line-join': 'round',
+                'line-cap': 'round',
+              },
+              paint: {
+                'line-color': routeColor,
+                'line-width': 6,
+                'line-opacity': 0,
+                'line-blur': 2,
+              },
+            });
+
+            // Add interactivity to route
+            map.on('click', routeId, () => {
+              if (onElementClick) {
+                onElementClick({ type: 'caravan', data: caravan });
+              }
+            });
+
+            map.on('mouseenter', routeId, () => {
+              map.getCanvas().style.cursor = 'pointer';
+              map.setPaintProperty(routeHighlightId, 'line-opacity', 0.4);
+            });
+
+            map.on('mouseleave', routeId, () => {
+              map.getCanvas().style.cursor = '';
+              map.setPaintProperty(routeHighlightId, 'line-opacity', 0);
+            });
           }
-        });
-
-        map.on('mouseenter', routeId, () => {
-          map.getCanvas().style.cursor = 'pointer';
-        });
-
-        map.on('mouseleave', routeId, () => {
-          map.getCanvas().style.cursor = '';
-        });
-      }
+        }
+      });
 
       // Helper to create pin marker
       const createPinMarker = (color: string) => {
@@ -588,18 +828,6 @@ function GuildMap({
           return;
         }
 
-        const popup = new mapboxgl.Popup({
-          offset: 15,
-          closeButton: false,
-          closeOnClick: false,
-          className: 'custom-popup'
-        }).setHTML(`
-          <div style="padding: 8px; background: linear-gradient(135deg, #2b4539, #3f6053); border-radius: 6px;">
-            <p style="margin: 0; font-size: 12px; color: #F6FAF6; font-weight: 600;">${waypoint.name}</p>
-            <p style="margin: 2px 0 0 0; font-size: 10px; color: #ffffff/80;">Route waypoint ${index}</p>
-          </div>
-        `);
-
         const waypointDot = new mapboxgl.Marker({
           element: createIconMarker(waypoint.name || 'Stop'),
           anchor: 'center',
@@ -607,22 +835,36 @@ function GuildMap({
           .setLngLat([waypoint.lng, waypoint.lat])
           .addTo(map);
 
-        // Show popup on hover
+        // Show custom tooltip on hover
         const markerEl = waypointDot.getElement();
-        markerEl.addEventListener('mouseenter', () => {
-          popup.addTo(map);
-          waypointDot.setPopup(popup);
-          popup.addTo(map);
+        markerEl.addEventListener('mouseenter', (e) => {
+          showTooltip(`${waypoint.name}<br/><span style="font-size: 10px; opacity: 0.8;">Click for photos</span>`, e.clientX, e.clientY);
+        });
+
+        markerEl.addEventListener('mousemove', (e) => {
+          if (tooltipRef.current && tooltipRef.current.style.opacity === '1') {
+            tooltipRef.current.style.left = `${e.clientX + 15}px`;
+            tooltipRef.current.style.top = `${e.clientY - 10}px`;
+          }
         });
 
         markerEl.addEventListener('mouseleave', () => {
-          popup.remove();
+          hideTooltip();
         });
 
         // Add click handler for photo gallery
-        markerEl.addEventListener('click', () => {
+        markerEl.addEventListener('click', (e) => {
+          e.stopPropagation();
+          hideTooltip();
           if (onElementClick) {
-            onElementClick({ type: 'caravan', data: caravan });
+            // Pass waypoint-specific data for photo gallery
+            onElementClick({
+              type: 'caravan',
+              data: {
+                ...caravan,
+                selectedWaypoint: waypoint
+              } as Caravan
+            });
           }
         });
 
@@ -732,27 +974,26 @@ function GuildMap({
           background: rgba(246, 250, 246, 0.1) !important;
         }
 
-        .mapboxgl-ctrl-group {
-          background: rgba(0, 0, 0, 0.8) !important;
-          border: 1px solid #3f6053 !important;
+        /* Hide all map controls (zoom buttons, etc) */
+        .mapboxgl-ctrl-group,
+        .mapboxgl-ctrl-zoom-in,
+        .mapboxgl-ctrl-zoom-out,
+        .mapboxgl-ctrl-compass {
+          display: none !important;
         }
 
-        .mapboxgl-ctrl-group button {
-          background: transparent !important;
-          color: #F6FAF6 !important;
-        }
-
-        .mapboxgl-ctrl-group button:hover {
-          background: rgba(63, 96, 83, 0.3) !important;
-        }
-
-        .mapboxgl-ctrl-group button + button {
-          border-top: 1px solid #3f6053 !important;
+        /* Hide Mapbox logo and attribution at bottom right */
+        .mapboxgl-ctrl-logo,
+        .mapboxgl-ctrl-attrib,
+        .mapboxgl-ctrl-attrib-button {
+          display: none !important;
         }
 
         /* Prevent markers from shifting when modals open */
         .mapboxgl-marker {
           will-change: transform !important;
+          position: absolute !important;
+          transform-origin: center center !important;
         }
 
         .mapboxgl-canvas-container,
@@ -763,6 +1004,22 @@ function GuildMap({
           width: 100% !important;
           height: 100% !important;
         }
+
+        /* Force map container to maintain position */
+        .mapboxgl-map {
+          position: relative !important;
+          overflow: hidden !important;
+        }
+
+        /* Prevent any layout shifts */
+        .mapboxgl-canvas-container canvas {
+          position: absolute !important;
+        }
+
+        /* Custom tooltip styling */
+        .custom-map-tooltip {
+          font-family: ui-sans-serif, system-ui, sans-serif !important;
+        }
       `}</style>
       <div
         ref={mapContainerRef}
@@ -770,6 +1027,8 @@ function GuildMap({
         style={{
           minHeight: '500px',
           position: 'relative',
+          transform: 'translate3d(0,0,0)',
+          backfaceVisibility: 'hidden',
         }}
       />
     </>

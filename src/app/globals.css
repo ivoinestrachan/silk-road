@@ -76,3 +76,17 @@ body {
   scrollbar-width: thin;
   scrollbar-color: #3f6053 #000000;
 }
+
+/* Hacking terminal scan line animation */
+@keyframes scan {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+.animate-scan {
+  animation: scan 8s linear infinite;
+}

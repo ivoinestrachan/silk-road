@@ -3,7 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
+import { HiHome, HiArrowRight } from 'react-icons/hi';
 import PassportOverlay from '@/components/PassportOverlay';
+import PhotoGalleryModal from '@/components/PhotoGalleryModal';
+import MiniBrowserModal from '@/components/MiniBrowserModal';
 import {
   allCaravans,
   properties,
@@ -48,6 +51,11 @@ export default function MapPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showTelosModal, setShowTelosModal] = useState(false);
   const [telosHouseUrl, setTelosHouseUrl] = useState<string>('');
+  const [showTelosIframe, setShowTelosIframe] = useState(false);
+  const [selectedTelosProperty, setSelectedTelosProperty] = useState<Property | null>(null);
+  const [showPhotoGallery, setShowPhotoGallery] = useState(false);
+  const [photoGalleryLocation, setPhotoGalleryLocation] = useState<string>('');
+  const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -90,11 +98,44 @@ export default function MapPage() {
     // Check if it's a Telos House
     if (element.type === 'property') {
       const property = element.data as Property;
-      if (property.id === 'prop-telos' || property.id === 'prop-telos-shenzhen') {
+      if (property.id === 'prop-telos' || property.id === 'prop-telos-sf' || property.id === 'prop-telos-shenzhen') {
+        if (typeof window !== 'undefined') {
+          setModalPosition({
+            x: window.innerWidth - 300,
+            y: window.innerHeight / 2,
+          });
+        }
+        setSelectedTelosProperty(property);
         setTelosHouseUrl('https://house-eight-gamma.vercel.app/');
+        setShowTelosIframe(false);
         setShowTelosModal(true);
         return;
       }
+    }
+
+    // Check if it's a caravan waypoint click (for photo gallery)
+    if (element.type === 'caravan') {
+      const caravan = element.data as any;
+      if (caravan.selectedWaypoint) {
+        if (typeof window !== 'undefined') {
+          setModalPosition({
+            x: window.innerWidth - 300,
+            y: window.innerHeight / 2,
+          });
+        }
+        // Show photo gallery for this waypoint
+        setPhotoGalleryLocation(caravan.selectedWaypoint.name);
+        setShowPhotoGallery(true);
+        return;
+      }
+    }
+
+    // Set modal position (right side of screen, centered vertically)
+    if (typeof window !== 'undefined') {
+      setModalPosition({
+        x: window.innerWidth - 300,
+        y: window.innerHeight / 2,
+      });
     }
 
     setSelectedElement(element);
@@ -106,12 +147,13 @@ export default function MapPage() {
     if (selectedElement.type === 'caravan') {
       const caravan = selectedElement.data as Caravan;
       return (
-        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={() => setSelectedElement(null)}>
-          <div className="bg-gradient-to-br from-[#2b4539] to-[#3f6053] p-6 rounded-lg border-2 border-[#3f6053] max-w-lg w-full mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-start justify-between mb-4">
-              <h3 className="font-serif text-2xl text-[#F6FAF6]">{caravan.name}</h3>
-              <button onClick={() => setSelectedElement(null)} className="text-[#F6FAF6] hover:text-white text-2xl leading-none">&times;</button>
-            </div>
+        <MiniBrowserModal
+          title={caravan.name}
+          onClose={() => setSelectedElement(null)}
+          position={modalPosition}
+          width="500px"
+        >
+          <div>
 
             <div className="space-y-3 text-sm">
               <div className="flex items-center gap-2">
@@ -191,7 +233,7 @@ export default function MapPage() {
               </a>
             </div>
           </div>
-        </div>
+        </MiniBrowserModal>
       );
     }
 
@@ -199,12 +241,13 @@ export default function MapPage() {
       const property = selectedElement.data as Property;
 
       return (
-        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={() => setSelectedElement(null)}>
-          <div className="bg-gradient-to-br from-[#2b4539] to-[#3f6053] p-6 rounded-lg border-2 border-[#3f6053]/50 max-w-lg w-full mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-start justify-between mb-4">
-              <h3 className="font-serif text-2xl text-white">{property.name}</h3>
-              <button onClick={() => setSelectedElement(null)} className="text-white hover:text-[#F6FAF6] text-2xl leading-none">&times;</button>
-            </div>
+        <MiniBrowserModal
+          title={property.name}
+          onClose={() => setSelectedElement(null)}
+          position={modalPosition}
+          width="500px"
+        >
+          <div>
 
             <div className="space-y-3 text-sm">
               <div>
@@ -256,7 +299,7 @@ export default function MapPage() {
               </a>
             </div>
           </div>
-        </div>
+        </MiniBrowserModal>
       );
     }
 
@@ -265,30 +308,31 @@ export default function MapPage() {
       const isPartnerVC = member.passportId.startsWith('VC-');
 
       return (
-        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={() => setSelectedElement(null)}>
-          <div className="bg-gradient-to-br from-[#8B7355] to-[#6B5845] rounded-lg border-2 border-[#C4B89D] shadow-2xl overflow-hidden max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
-            <div className="bg-gradient-to-r from-[#2c3e2e] to-[#1a3a2e] p-4 border-b-2 border-[#C4B89D]">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-16 h-16 bg-[#C4B89D]/20 rounded-full border-3 border-[#C4B89D] flex items-center justify-center overflow-hidden">
-                    {member.avatar ? (
-                      <img src={member.avatar} alt={member.name} className="w-full h-full object-cover" />
-                    ) : isPartnerVC ? (
-                      <span className="text-3xl">💼</span>
-                    ) : (
-                      <span className="text-3xl">👤</span>
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-serif text-xl text-[#E8E4D9]">{member.name}</h3>
-                    <p className="text-xs text-[#C4B89D] uppercase tracking-widest font-mono">
-                      {member.passportId}
-                    </p>
-                  </div>
-                </div>
-                <button onClick={() => setSelectedElement(null)} className="text-[#E8E4D9] hover:text-white text-2xl leading-none">&times;</button>
+        <MiniBrowserModal
+          title={`${member.name} - ${member.passportId}`}
+          onClose={() => setSelectedElement(null)}
+          position={modalPosition}
+          width="450px"
+        >
+          <div className="bg-gradient-to-r from-[#2c3e2e] to-[#1a3a2e] -mx-6 -mt-6 p-4 mb-4 border-b-2 border-[#C4B89D]">
+            <div className="flex items-center gap-3">
+              <div className="w-16 h-16 bg-[#C4B89D]/20 rounded-full border-3 border-[#C4B89D] flex items-center justify-center overflow-hidden">
+                {member.avatar ? (
+                  <img src={member.avatar} alt={member.name} className="w-full h-full object-cover" />
+                ) : isPartnerVC ? (
+                  <span className="text-3xl">💼</span>
+                ) : (
+                  <span className="text-3xl">👤</span>
+                )}
+              </div>
+              <div className="flex-1">
+                <h3 className="font-serif text-xl text-[#E8E4D9]">{member.name}</h3>
+                <p className="text-xs text-[#C4B89D] uppercase tracking-widest font-mono">
+                  {member.passportId}
+                </p>
               </div>
             </div>
+          </div>
 
             <div className="p-5 bg-[#E8E4D9]">
               <div className="space-y-3">
@@ -359,13 +403,12 @@ export default function MapPage() {
               </div>
             </div>
 
-            <div className="bg-gradient-to-r from-[#2c3e2e] to-[#1a3a2e] px-5 py-3 border-t-2 border-[#C4B89D]">
+            <div className="bg-gradient-to-r from-[#2c3e2e] to-[#1a3a2e] -mx-6 -mb-6 px-5 py-3 border-t-2 border-[#C4B89D] mt-4">
               <p className="text-xs text-[#C4B89D]/70 text-center italic font-serif">
                 "The journey of a thousand miles begins with a single step"
               </p>
             </div>
-          </div>
-        </div>
+        </MiniBrowserModal>
       );
     }
 
@@ -373,40 +416,168 @@ export default function MapPage() {
   };
 
   const renderTelosModal = () => {
-    if (!showTelosModal) return null;
+    if (!showTelosModal || !selectedTelosProperty) return null;
 
-    return (
-      <div className="fixed inset-0 z-[10001] flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={() => setShowTelosModal(false)}>
-        <div className="bg-gradient-to-br from-[#2c3e2e] to-[#1a3a2e] p-8 rounded-lg border-2 border-[#F6FAF6]/30 max-w-md w-full mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-          <div className="text-center mb-6">
-            <img
-              src="/telos-house-logo.png"
-              alt="Telos House"
-              className="w-24 h-24 mx-auto mb-4 object-contain"
+    const handleCloseModal = () => {
+      setShowTelosModal(false);
+      setShowTelosIframe(false);
+      setSelectedTelosProperty(null);
+    };
+
+    // Show iframe view
+    if (showTelosIframe) {
+      return (
+        <div className="fixed inset-0 z-[10001] flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={handleCloseModal}>
+          <div className="bg-gradient-to-br from-[#2c3e2e] to-[#1a3a2e] rounded-lg border-2 border-[#F6FAF6]/30 max-w-6xl w-full mx-4 shadow-2xl overflow-hidden" style={{ height: '90vh' }} onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-4 border-b border-[#F6FAF6]/30 bg-[#2c3e2e]/80">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setShowTelosIframe(false)}
+                  className="text-[#F6FAF6]/70 hover:text-[#F6FAF6] text-sm flex items-center gap-2 transition-colors"
+                >
+                  ← Back to Info
+                </button>
+                <div className="h-6 w-px bg-[#F6FAF6]/30"></div>
+                <img
+                  src="/telos-house-logo.png"
+                  alt="Telos House"
+                  className="w-10 h-10 object-contain"
+                />
+                <div>
+                  <h2 className="font-serif text-xl text-[#F6FAF6]">{selectedTelosProperty.name}</h2>
+                  <p className="text-xs text-[#F6FAF6]/70 uppercase tracking-widest">Guild Headquarters</p>
+                </div>
+              </div>
+              <button
+                onClick={handleCloseModal}
+                className="text-[#F6FAF6] hover:text-white text-2xl leading-none transition-colors"
+              >
+                &times;
+              </button>
+            </div>
+            <iframe
+              src={telosHouseUrl}
+              className="w-full h-full"
+              style={{ height: 'calc(90vh - 80px)' }}
+              title="Telos House"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             />
-            <h2 className="font-serif text-3xl text-[#F6FAF6] mb-2">Telos House</h2>
-            <p className="text-sm text-[#F6FAF6]/70 uppercase tracking-widest">Guild Headquarters</p>
+          </div>
+        </div>
+      );
+    }
+
+    // Determine status and styling based on property
+    const isUpcoming = selectedTelosProperty.description?.includes('[UPCOMING]') || false;
+    const isHeadquarters = selectedTelosProperty.id === 'prop-telos';
+
+    let statusBadge = null;
+    let borderGlow = 'border-[#ffd700]';
+
+    if (isHeadquarters) {
+      statusBadge = (
+        <div className="px-3 py-1 bg-gradient-to-r from-[#ffd700] to-[#ffed4e] text-black text-xs font-bold rounded-full shadow-lg">
+          HEADQUARTERS
+        </div>
+      );
+      borderGlow = 'border-[#ffd700] shadow-[0_0_20px_rgba(255,215,0,0.3)]';
+    } else if (isUpcoming) {
+      statusBadge = (
+        <div className="px-3 py-1 bg-gradient-to-r from-[#f97316] to-[#fb923c] text-white text-xs font-bold rounded-full shadow-lg">
+          UPCOMING
+        </div>
+      );
+      borderGlow = 'border-[#f97316] shadow-[0_0_20px_rgba(249,115,22,0.3)]';
+    } else {
+      statusBadge = (
+        <div className="px-3 py-1 bg-gradient-to-r from-[#6366f1] to-[#818cf8] text-white text-xs font-bold rounded-full shadow-lg">
+          ACTIVE
+        </div>
+      );
+      borderGlow = 'border-[#6366f1] shadow-[0_0_20px_rgba(99,102,241,0.3)]';
+    }
+
+    // Show info card view
+    return (
+      <div className="fixed inset-0 z-[10001] flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={handleCloseModal}>
+        <div className={`bg-gradient-to-br from-[#1a1a1a] via-[#2b4539] to-[#1a1a1a] p-8 rounded-xl border-2 ${borderGlow} max-w-2xl w-full mx-4 shadow-2xl relative overflow-hidden`} onClick={(e) => e.stopPropagation()}>
+          {/* Background glow effect */}
+          <div className="absolute inset-0 bg-gradient-to-br from-transparent via-[#3f6053]/20 to-transparent pointer-events-none" />
+
+          {/* Header section */}
+          <div className="relative z-10 flex items-start justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <img
+                  src="/telos-house-logo.png"
+                  alt="Telos House"
+                  className="w-20 h-20 object-contain"
+                  style={{
+                    filter: isHeadquarters
+                      ? 'drop-shadow(0 0 8px #ffd700)'
+                      : isUpcoming
+                      ? 'drop-shadow(0 0 8px #f97316)'
+                      : 'drop-shadow(0 0 8px #6366f1)'
+                  }}
+                />
+              </div>
+              <div className="space-y-2">
+                <h3 className="font-serif text-3xl text-[#F6FAF6] font-bold tracking-tight">
+                  {selectedTelosProperty.name}
+                </h3>
+                <p className="text-sm text-[#F6FAF6]/80 flex items-center gap-2">
+                  <span className="text-lg">📍</span>
+                  {selectedTelosProperty.location.name}
+                </p>
+                {statusBadge}
+              </div>
+            </div>
+            <button
+              onClick={handleCloseModal}
+              className="text-[#F6FAF6]/70 hover:text-[#F6FAF6] text-3xl leading-none transition-colors"
+            >
+              &times;
+            </button>
           </div>
 
-          <div className="space-y-4">
-            <p className="text-center text-[#F6FAF6]/90 italic font-serif">
-              "Where innovation meets tradition"
+          {/* Description */}
+          <div className="relative z-10 mb-6">
+            <p className="text-[#F6FAF6]/90 text-lg leading-relaxed">
+              {selectedTelosProperty.description?.replace('[UPCOMING]', '').trim() || 'No description available'}
             </p>
+          </div>
 
-            <a
-              href={telosHouseUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block w-full py-3 px-4 bg-gradient-to-r from-[#F6FAF6] to-[#ffffff] text-[#2c3e2e] text-center rounded font-semibold text-sm uppercase tracking-wide hover:shadow-lg transition-all"
-            >
-              Visit Telos House
-            </a>
+          {/* Stats grid */}
+          <div className="relative z-10 grid grid-cols-2 gap-4 mb-6">
+            <div className="bg-black/30 backdrop-blur-sm p-4 rounded-lg border border-[#3f6053]/40">
+              <p className="text-[#F6FAF6]/60 text-xs uppercase tracking-wider mb-1">Type</p>
+              <p className="text-[#F6FAF6] font-semibold text-xl capitalize">{selectedTelosProperty.type}</p>
+            </div>
+            <div className="bg-black/30 backdrop-blur-sm p-4 rounded-lg border border-[#3f6053]/40">
+              <p className="text-[#F6FAF6]/60 text-xs uppercase tracking-wider mb-1">Capacity</p>
+              <p className="text-[#F6FAF6] font-semibold text-xl">{selectedTelosProperty.capacity} people</p>
+            </div>
+          </div>
+
+          {/* Amenities section */}
+          <div className="relative z-10">
+            <p className="text-[#F6FAF6]/80 text-sm uppercase tracking-wider mb-3 font-semibold">Amenities & Features</p>
+            <div className="flex flex-wrap gap-3 mb-6">
+              {selectedTelosProperty.amenities?.map((amenity) => (
+                <span
+                  key={amenity}
+                  className="px-4 py-2 bg-gradient-to-r from-[#2b4539] to-[#3f6053] text-[#F6FAF6] text-sm font-medium rounded-lg border border-[#3f6053]/50 shadow-md hover:shadow-lg transition-shadow"
+                >
+                  {amenity}
+                </span>
+              )) || <p className="text-[#F6FAF6]/60 text-sm">No amenities listed</p>}
+            </div>
 
             <button
-              onClick={() => setShowTelosModal(false)}
-              className="block w-full py-2 px-4 bg-transparent border border-[#F6FAF6]/30 text-[#F6FAF6] text-center rounded text-sm uppercase tracking-wide hover:bg-[#F6FAF6]/10 transition-all"
+              onClick={() => setShowTelosIframe(true)}
+              className="w-full py-3 bg-gradient-to-r from-[#F6FAF6] to-[#ffffff] text-[#2b4539] rounded font-semibold text-sm uppercase tracking-wide hover:shadow-lg transition-all flex items-center justify-center gap-2"
             >
-              Close
+              View House <HiArrowRight className="text-lg" />
             </button>
           </div>
         </div>
@@ -419,8 +590,8 @@ export default function MapPage() {
       {/* Left Sidebar with Title and Filters - Top Half Only */}
       <div className="fixed top-0 left-0 w-80 bg-[#000000] border-r border-[#3f6053]/30 z-[9999] flex flex-col" style={{ height: '50vh' }}>
         {/* Title Section */}
-        <div className="p-6 border-b border-[#3f6053]/40">
-          <div className="mb-6 flex items-center justify-center">
+        <div className="p-6 border-b border-[#3f6053]/40 flex-shrink-0">
+          <div className="mb-4 flex items-center justify-center">
             <div className="flex items-center gap-1 px-4 py-2">
               <div className="h-px bg-[#3f6053]/40 flex-1 w-8"></div>
               <span className="text-xs text-white/70 uppercase tracking-widest px-2">
@@ -430,25 +601,25 @@ export default function MapPage() {
             </div>
           </div>
 
-          <h1 className="text-2xl md:text-3xl font-serif text-white tracking-wide mb-4 text-center"
+          <h1 className="text-2xl md:text-3xl font-serif text-white tracking-wide mb-2 text-center"
             style={{
               textShadow: '0 2px 8px rgba(0,0,0,0.5)'
             }}
           >
             TELOS LEAGUE
           </h1>
-          <p className="text-xs text-white/80 text-center uppercase tracking-wider mb-4">
+          <p className="text-xs text-white/80 text-center uppercase tracking-wider mb-3">
             Trad-Digital Network
           </p>
 
-          <div className="h-px bg-[#3f6053]/40 mb-4"></div>
+          <div className="h-px bg-[#3f6053]/40 mb-3"></div>
 
-          <p className="text-sm text-white/70 text-center italic font-serif mb-6">
+          <p className="text-sm text-white/70 text-center italic font-serif mb-3">
             "The journey of a thousand miles begins with a single step"
           </p>
 
           {isAdmin && (
-            <div className="mb-4">
+            <div className="mb-0">
               <button
                 onClick={() => router.push('/admin')}
                 className="w-full py-2 text-xs uppercase tracking-wide rounded bg-[#F6FAF6]/20 text-[#F6FAF6] hover:bg-[#F6FAF6]/30 transition-all border border-[#F6FAF6]/50"
@@ -460,7 +631,7 @@ export default function MapPage() {
         </div>
 
         {/* Filters Section */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-6 min-h-0">
           <div className="bg-gradient-to-br from-[#2b4539]/20 to-[#3f6053]/20 border border-[#3f6053]/30 rounded-lg backdrop-blur-sm p-4">
             <h3 className="text-xs uppercase tracking-wider text-[#F6FAF6] mb-3 font-serif">
               Map Filters
@@ -498,6 +669,21 @@ export default function MapPage() {
           </div>
         </div>
       </div>
+
+      {/* Reset Camera Button */}
+      <button
+        onClick={() => {
+          const mapContainer = document.querySelector('.mapboxgl-map');
+          if (mapContainer) {
+            const event = new CustomEvent('resetCamera');
+            mapContainer.dispatchEvent(event);
+          }
+        }}
+        className="fixed top-4 left-4 z-[9998] bg-[#000000]/90 backdrop-blur-sm p-3 rounded-lg shadow-2xl border-2 border-[#F6FAF6]/50 hover:bg-[#000000]/95 hover:border-[#F6FAF6] transition-all"
+        title="Reset camera to default view"
+      >
+        <HiHome className="text-white text-xl" />
+      </button>
 
       {/* Map Legend */}
       <div className="fixed bottom-4 right-4 z-[9997] max-w-[90vw] md:max-w-none">
@@ -546,9 +732,8 @@ export default function MapPage() {
         </div>
       </div>
 
-      {/* Map - offset by sidebar width, no background on left side */}
-      <div className="h-full">
-        <div className="ml-80 h-full">
+      {/* Map - full screen */}
+      <div className="h-full w-full">
         <GuildMap
           caravans={activeFilters.includes('caravans') ? allCaravans : []}
           members={isAuthenticated && activeFilters.includes('partners') ? partnerVCs : []}
@@ -561,7 +746,6 @@ export default function MapPage() {
           onElementClick={handleElementClick}
           isAuthenticated={isAuthenticated}
         />
-        </div>
       </div>
 
       {/* Element Info Modal */}
@@ -569,6 +753,15 @@ export default function MapPage() {
 
       {/* Telos House Modal */}
       {renderTelosModal()}
+
+      {/* Photo Gallery Modal */}
+      {showPhotoGallery && (
+        <PhotoGalleryModal
+          locationName={photoGalleryLocation}
+          onClose={() => setShowPhotoGallery(false)}
+          isAdmin={isAdmin}
+        />
+      )}
 
       {/* Passport Overlay Button */}
       {isAuthenticated && (
