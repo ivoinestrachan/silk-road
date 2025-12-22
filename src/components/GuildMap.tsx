@@ -120,7 +120,10 @@ function GuildMap({
     }
 
     map.on('error', (e: any) => {
-      console.error('Mapbox error:', e);
+      // Suppress non-critical Mapbox errors (like missing tiles)
+      if (e?.error?.message && !e.error.message.includes('Failed to fetch') && !e.error.message.includes('NetworkError')) {
+        console.warn('Mapbox warning:', e);
+      }
     });
 
     map.on('load', () => {
