@@ -54,7 +54,7 @@ export default function BulletinBoard() {
   const futureEvents = allCaravans.filter(c => c.status === 'upcoming');
 
   return (
-    <div className="fixed left-4 bottom-4 z-[9996]">
+    <div className="fixed left-[336px] bottom-4 z-[9996]">
       {!isExpanded ? (
         // Collapsed State - Small Button
         <button
