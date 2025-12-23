@@ -19,6 +19,7 @@ interface GuildMapProps {
   isModalOpen?: boolean;
   onMapLoaded?: () => void;
   onZoomControlsReady?: (controls: { zoomIn: () => void; zoomOut: () => void; resetView: () => void }) => void;
+  onCameraControlsReady?: (controls: { focusOnElement: (element: { type: string; data: any }) => void; resetCamera: () => void }) => void;
 }
 
 function GuildMap({
@@ -31,11 +32,18 @@ function GuildMap({
   isModalOpen = false,
   onMapLoaded,
   onZoomControlsReady,
+  onCameraControlsReady,
 }: GuildMapProps) {
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
+  const originalCameraRef = useRef<{ center: [number, number]; zoom: number; pitch: number; bearing: number }>({
+    center: [13.405, 52.52],
+    zoom: 4.5,
+    pitch: 0,
+    bearing: 0
+  });
 
   // Create custom tooltip element
   useEffect(() => {
@@ -305,10 +313,58 @@ function GuildMap({
           },
           resetView: () => {
             map.flyTo({
-              center: [13.405, 52.52],
-              zoom: 4.5,
-              pitch: 0,
-              bearing: 0,
+              center: originalCameraRef.current.center,
+              zoom: originalCameraRef.current.zoom,
+              pitch: originalCameraRef.current.pitch,
+              bearing: originalCameraRef.current.bearing,
+              duration: 1500
+            });
+          }
+        });
+      }
+
+      // Expose camera controls to parent
+      if (onCameraControlsReady) {
+        onCameraControlsReady({
+          focusOnElement: (element: { type: string; data: any }) => {
+            // Save current camera position before focusing
+            originalCameraRef.current = {
+              center: [map.getCenter().lng, map.getCenter().lat],
+              zoom: map.getZoom(),
+              pitch: map.getPitch(),
+              bearing: map.getBearing()
+            };
+
+            if (element.type === 'caravan') {
+              const caravan = element.data as Caravan;
+              if (caravan.route && caravan.route.waypoints.length > 0) {
+                const coordinates = caravan.route.waypoints.map(wp => [wp.lng, wp.lat] as [number, number]);
+                const bounds = coordinates.reduce((bounds, coord) => {
+                  return bounds.extend(coord);
+                }, new mapboxgl.LngLatBounds(coordinates[0], coordinates[0]));
+
+                map.fitBounds(bounds, {
+                  padding: { top: 100, bottom: 100, left: 420, right: 100 },
+                  duration: 1500,
+                  essential: true
+                });
+              }
+            } else if (element.type === 'property' || element.type === 'member') {
+              const location = element.data.location;
+              map.flyTo({
+                center: [location.lng, location.lat],
+                zoom: 12,
+                duration: 1500,
+                essential: true
+              });
+            }
+          },
+          resetCamera: () => {
+            map.flyTo({
+              center: originalCameraRef.current.center,
+              zoom: originalCameraRef.current.zoom,
+              pitch: originalCameraRef.current.pitch,
+              bearing: originalCameraRef.current.bearing,
               duration: 1500
             });
           }
@@ -533,24 +589,35 @@ function GuildMap({
         markerElement = div;
       } else if (property.id === 'prop-telos') {
         // Original Telos House - larger
+        const wrapper = document.createElement('div');
+        wrapper.style.position = 'relative';
+        wrapper.style.zIndex = '10';
         const img = document.createElement('img');
         img.src = '/telos-house-logo.png';
         img.style.width = '56px';
         img.style.height = '56px';
         img.style.cursor = 'pointer';
         img.style.filter = 'drop-shadow(0 0 2px rgba(0,0,0,0.9))';
-        markerElement = img;
+        wrapper.appendChild(img);
+        markerElement = wrapper;
       } else if (property.id === 'prop-telos-sf') {
         // SF Telos House
+        const wrapper = document.createElement('div');
+        wrapper.style.position = 'relative';
+        wrapper.style.zIndex = '10';
         const img = document.createElement('img');
         img.src = '/telos-house-logo.png';
         img.style.width = '48px';
         img.style.height = '48px';
         img.style.cursor = 'pointer';
         img.style.filter = 'drop-shadow(0 0 2px rgba(0,0,0,0.9))';
-        markerElement = img;
+        wrapper.appendChild(img);
+        markerElement = wrapper;
       } else if (property.id === 'prop-telos-shenzhen') {
         // Shenzhen Telos House (upcoming)
+        const wrapper = document.createElement('div');
+        wrapper.style.position = 'relative';
+        wrapper.style.zIndex = '10';
         const img = document.createElement('img');
         img.src = '/telos-house-logo.png';
         img.style.width = '40px';
@@ -558,7 +625,8 @@ function GuildMap({
         img.style.cursor = 'pointer';
         img.style.filter = 'drop-shadow(0 0 2px rgba(0,0,0,0.9)) grayscale(30%)';
         img.style.opacity = '0.85';
-        markerElement = img;
+        wrapper.appendChild(img);
+        markerElement = wrapper;
       } else {
         // Generic property with building icon (SVG)
         const div = document.createElement('div');
@@ -756,13 +824,11 @@ function GuildMap({
         return; // Skip rest of rendering for this event
       }
 
-      // Determine route color
-      const routeColor =
-        caravan.status === 'live'
-          ? '#ff6b6b'
-          : caravan.status === 'upcoming'
-            ? '#ffa500'
-            : '#c41e3a';
+      // Determine route color - all dark green now
+      const routeColor = '#3f6053';
+
+      // Determine line style based on status
+      const lineDasharray = caravan.status === 'completed' ? undefined : [4, 4];
 
       // Add route line to map using Directions API
       const routeId = `route-${caravan.id}`;
@@ -802,7 +868,7 @@ function GuildMap({
                 'line-color': routeColor,
                 'line-width': 2,
                 'line-opacity': 0.8,
-                'line-dasharray': [4, 4],
+                ...(lineDasharray && { 'line-dasharray': lineDasharray }),
               },
             });
 

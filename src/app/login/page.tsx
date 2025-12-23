@@ -239,9 +239,9 @@ export default function LoginPage() {
 
       <button
         onClick={() => setShowLoginModal(true)}
-        className="fixed top-2 right-2 md:top-4 md:right-4 z-[10000] bg-[#000000]/80 backdrop-blur-sm p-2 md:p-3 rounded-lg shadow-2xl border-2 border-[#F6FAF6]/50 hover:bg-[#000000]/90 hover:border-[#F6FAF6] transition-all duration-300"
+        className="fixed top-2 right-2 md:top-4 md:right-4 z-[10000] bg-[#000000]/80 backdrop-blur-sm p-2 md:p-3 rounded-lg shadow-2xl border-2 border-[#3f6053]/50 hover:bg-[#000000]/90 hover:border-[#3f6053] transition-all duration-300"
         style={{
-          boxShadow: '0 8px 32px rgba(0,0,0,0.4), inset 0 1px 2px rgba(246,250,246,0.1)'
+          boxShadow: '0 8px 32px rgba(0,0,0,0.4), inset 0 1px 2px rgba(63,96,83,0.1)'
         }}
         aria-label="Login"
       >

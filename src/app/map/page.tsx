@@ -64,6 +64,10 @@ export default function MapPage() {
     zoomOut: () => void;
     resetView: () => void;
   } | null>(null);
+  const [cameraControls, setCameraControls] = useState<{
+    focusOnElement: (element: { type: string; data: any }) => void;
+    resetCamera: () => void;
+  } | null>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -100,6 +104,22 @@ export default function MapPage() {
     setIsAuthenticated(false);
     setActiveFilters(['caravans', 'locations']);
     router.push('/login');
+  };
+
+  const handleModalClose = () => {
+    if (cameraControls) {
+      cameraControls.resetCamera();
+    }
+    setSelectedElement(null);
+  };
+
+  const handleTelosModalClose = () => {
+    if (cameraControls) {
+      cameraControls.resetCamera();
+    }
+    setShowTelosModal(false);
+    setShowTelosIframe(false);
+    setSelectedTelosProperty(null);
   };
 
   const handleElementClick = (element: MapElement & { clickX?: number; clickY?: number }) => {
@@ -147,6 +167,11 @@ export default function MapPage() {
       return { x, y };
     };
 
+    // Focus camera on clicked element
+    if (cameraControls) {
+      cameraControls.focusOnElement(element);
+    }
+
     // Check if it's a Telos House
     if (element.type === 'property') {
       const property = element.data as Property;
@@ -186,7 +211,7 @@ export default function MapPage() {
       return (
         <MiniBrowserModal
           title={caravan.name}
-          onClose={() => setSelectedElement(null)}
+          onClose={handleModalClose}
           position={modalPosition}
           width="500px"
         >
@@ -291,7 +316,7 @@ export default function MapPage() {
       return (
         <MiniBrowserModal
           title={property.name}
-          onClose={() => setSelectedElement(null)}
+          onClose={handleModalClose}
           position={modalPosition}
           width="500px"
         >
@@ -358,7 +383,7 @@ export default function MapPage() {
       return (
         <MiniBrowserModal
           title={`${member.name} - ${member.passportId}`}
-          onClose={() => setSelectedElement(null)}
+          onClose={handleModalClose}
           position={modalPosition}
           width="450px"
         >
@@ -466,11 +491,6 @@ export default function MapPage() {
   const renderTelosModal = () => {
     if (!showTelosModal || !selectedTelosProperty) return null;
 
-    const handleCloseModal = () => {
-      setShowTelosModal(false);
-      setShowTelosIframe(false);
-      setSelectedTelosProperty(null);
-    };
 
     // Calculate position with slight offset for stacking, ensuring it stays on screen
     const iframePosition = showTelosIframe ? (() => {
@@ -503,7 +523,7 @@ export default function MapPage() {
       return (
         <MiniBrowserModal
           title={`${selectedTelosProperty.name} - Virtual Tour`}
-          onClose={handleCloseModal}
+          onClose={handleTelosModalClose}
           position={iframePosition}
           width="1200px"
           height="90vh"
@@ -573,7 +593,7 @@ export default function MapPage() {
     return (
       <MiniBrowserModal
         title={`${selectedTelosProperty.name} - Location Details`}
-        onClose={handleCloseModal}
+        onClose={handleTelosModalClose}
         position={modalPosition}
         width="700px"
         height="auto"
@@ -739,9 +759,28 @@ export default function MapPage() {
       {/* Map Legend */}
       <div className="fixed bottom-4 right-4 z-[9997] max-w-[90vw] md:max-w-none">
         <div className="bg-[#000000]/95 backdrop-blur-md rounded-lg border-2 border-[#3f6053]/50 shadow-2xl overflow-hidden p-4">
-          <h3 className="font-serif text-white text-sm uppercase tracking-wider mb-3 border-b border-[#3f6053]/30 pb-2">
-            Map Legend
-          </h3>
+          <div className="flex items-center justify-between mb-3 pb-2 border-b border-[#3f6053]/30">
+            <h3 className="font-serif text-white text-sm uppercase tracking-wider">
+              Map Legend
+            </h3>
+            {isAuthenticated && (
+              <button
+                onClick={() => {
+                  const bulletinBoard = document.querySelector('[class*="BulletinBoard"]') as HTMLElement;
+                  if (bulletinBoard) {
+                    const button = bulletinBoard.querySelector('button') as HTMLElement;
+                    if (button) button.click();
+                  }
+                }}
+                className="text-[#3f6053] hover:text-[#F6FAF6] transition-colors"
+                title="Open Bulletin Board"
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M2 2L8 8M8 8L14 2M8 8L2 14M8 8L14 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+              </button>
+            )}
+          </div>
           <div className="space-y-2.5 text-xs">
             <div className="flex items-center gap-2.5">
               <div className="w-5 h-5 bg-red-600/80 rounded-full flex items-center justify-center border border-red-500/50 relative">
@@ -750,12 +789,12 @@ export default function MapPage() {
               <span className="text-white/90">Live Event</span>
             </div>
             <div className="flex items-center gap-2.5">
-              <div className="w-5 h-5 bg-amber-600/70 rounded border border-amber-500/50"></div>
-              <span className="text-white/90">Upcoming Route</span>
+              <div className="w-5 h-0.5 bg-[#3f6053]" style={{ backgroundImage: 'repeating-linear-gradient(90deg, #3f6053 0, #3f6053 4px, transparent 4px, transparent 8px)' }}></div>
+              <span className="text-white/90">Upcoming Route (Dashed)</span>
             </div>
             <div className="flex items-center gap-2.5">
-              <div className="w-5 h-5 bg-[#c41e3a] rounded border border-[#a01628]"></div>
-              <span className="text-white/90">Completed Route</span>
+              <div className="w-5 h-0.5 bg-[#3f6053]"></div>
+              <span className="text-white/90">Completed Route (Solid)</span>
             </div>
             <div className="flex items-center gap-2.5">
               <img
@@ -812,6 +851,7 @@ export default function MapPage() {
           isModalOpen={!!selectedElement || showTelosModal || showPhotoGallery}
           onMapLoaded={() => setMapLoaded(true)}
           onZoomControlsReady={(controls) => setZoomControls(controls)}
+          onCameraControlsReady={(controls) => setCameraControls(controls)}
         />
       </div>
 
