@@ -61,9 +61,20 @@ export default function LoginPage() {
   const [passportId, setPassportId] = useState('');
   const [error, setError] = useState('');
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showPassportApplication, setShowPassportApplication] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [selectedElement, setSelectedElement] = useState<{ type: 'caravan' | 'property'; data: Caravan | Property; clickX?: number; clickY?: number } | null>(null);
   const [showTelosIframe, setShowTelosIframe] = useState(false);
+  const [applicationData, setApplicationData] = useState({
+    name: '',
+    number: '',
+    email: '',
+    profession: '',
+    linkedin: '',
+    twitter: '',
+    advocateEmail: '',
+  });
+  const [applicationSubmitted, setApplicationSubmitted] = useState(false);
   const router = useRouter();
 
   const calculateModalPosition = () => {
@@ -104,6 +115,55 @@ export default function LoginPage() {
   };
 
   const modalPosition = calculateModalPosition();
+
+  const handleApplicationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setApplicationData({
+      ...applicationData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleApplicationSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      // Send application data to API endpoint
+      const response = await fetch('/api/passport-applications', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(applicationData),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        console.log('Passport application submitted successfully:', result.filename);
+        setApplicationSubmitted(true);
+
+        setTimeout(() => {
+          setShowPassportApplication(false);
+          setApplicationSubmitted(false);
+          setApplicationData({
+            name: '',
+            number: '',
+            email: '',
+            profession: '',
+            linkedin: '',
+            twitter: '',
+            advocateEmail: '',
+          });
+        }, 3000);
+      } else {
+        console.error('Failed to submit application:', result.message);
+        alert('Failed to submit application. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error submitting application:', error);
+      alert('An error occurred. Please try again.');
+    }
+  };
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -404,10 +464,188 @@ export default function LoginPage() {
             </form>
 
             <div className="mt-6 pt-6 border-t border-[#3f6053]/30">
-              <p className="text-xs text-white/60 text-center">
-                Need a passport? Contact your guild administrator
+              <p className="text-xs text-white/60 text-center mb-3">
+                Need a passport?
               </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowLoginModal(false);
+                  setShowPassportApplication(true);
+                }}
+                className="w-full py-2 bg-transparent border border-[#F6FAF6]/30 hover:bg-[#F6FAF6]/10 text-[#F6FAF6] rounded font-serif text-sm uppercase tracking-wide transition-all"
+              >
+                Apply for Passport
+              </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showPassportApplication && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-8 bg-black/60 backdrop-blur-[2px] overflow-y-auto">
+          <div className="relative bg-gradient-to-br from-[#2b4539] to-[#000000] rounded-lg border-2 border-[#3f6053]/40 shadow-2xl p-6 md:p-8 w-full max-w-2xl my-8">
+            <button
+              onClick={() => setShowPassportApplication(false)}
+              className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors text-xl"
+            >
+              ✕
+            </button>
+
+            {applicationSubmitted ? (
+              <div className="text-center py-8">
+                <div className="w-20 h-20 bg-[#F6FAF6]/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-4xl">✓</span>
+                </div>
+                <h2 className="text-2xl font-serif text-[#F6FAF6] mb-2">Application Submitted!</h2>
+                <p className="text-white/90 text-sm">
+                  Your passport application has been submitted successfully.
+                </p>
+                <p className="text-white/70 text-xs italic mt-2">
+                  We'll review your application and get back to you soon.
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="text-center mb-6">
+                  <h1 className="text-2xl md:text-3xl font-serif text-white tracking-wider mb-2">
+                    Apply for Guild Passport
+                  </h1>
+                  <div className="flex items-center justify-center gap-2 mb-4">
+                    <div className="h-px bg-[#3f6053]/40 flex-1"></div>
+                    <span className="text-xs text-white/70 uppercase tracking-widest">
+                      Join the Network
+                    </span>
+                    <div className="h-px bg-[#3f6053]/40 flex-1"></div>
+                  </div>
+                </div>
+
+                <form onSubmit={handleApplicationSubmit} className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+                  <div>
+                    <label className="block text-sm text-white/90 mb-2 uppercase tracking-wide font-serif">
+                      Full Name *
+                    </label>
+                    <input
+                      type="text"
+                      name="name"
+                      required
+                      value={applicationData.name}
+                      onChange={handleApplicationChange}
+                      placeholder="Enter your full name"
+                      className="w-full px-4 py-3 bg-[#000000]/80 border border-[#3f6053]/40 rounded text-white placeholder-[#3f6053]/50 focus:outline-none focus:ring-2 focus:ring-[#F6FAF6]/50 focus:border-[#F6FAF6]/50 transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-white/90 mb-2 uppercase tracking-wide font-serif">
+                      Phone Number *
+                    </label>
+                    <input
+                      type="tel"
+                      name="number"
+                      required
+                      value={applicationData.number}
+                      onChange={handleApplicationChange}
+                      placeholder="+1 (555) 000-0000"
+                      className="w-full px-4 py-3 bg-[#000000]/80 border border-[#3f6053]/40 rounded text-white placeholder-[#3f6053]/50 focus:outline-none focus:ring-2 focus:ring-[#F6FAF6]/50 focus:border-[#F6FAF6]/50 transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-white/90 mb-2 uppercase tracking-wide font-serif">
+                      Email Address *
+                    </label>
+                    <input
+                      type="email"
+                      name="email"
+                      required
+                      value={applicationData.email}
+                      onChange={handleApplicationChange}
+                      placeholder="your.email@example.com"
+                      className="w-full px-4 py-3 bg-[#000000]/80 border border-[#3f6053]/40 rounded text-white placeholder-[#3f6053]/50 focus:outline-none focus:ring-2 focus:ring-[#F6FAF6]/50 focus:border-[#F6FAF6]/50 transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-white/90 mb-2 uppercase tracking-wide font-serif">
+                      Profession / Title *
+                    </label>
+                    <input
+                      type="text"
+                      name="profession"
+                      required
+                      value={applicationData.profession}
+                      onChange={handleApplicationChange}
+                      placeholder="e.g., Software Engineer, Entrepreneur, Designer"
+                      className="w-full px-4 py-3 bg-[#000000]/80 border border-[#3f6053]/40 rounded text-white placeholder-[#3f6053]/50 focus:outline-none focus:ring-2 focus:ring-[#F6FAF6]/50 focus:border-[#F6FAF6]/50 transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-white/90 mb-2 uppercase tracking-wide font-serif">
+                      LinkedIn Profile *
+                    </label>
+                    <input
+                      type="url"
+                      name="linkedin"
+                      required
+                      value={applicationData.linkedin}
+                      onChange={handleApplicationChange}
+                      placeholder="https://linkedin.com/in/yourprofile"
+                      className="w-full px-4 py-3 bg-[#000000]/80 border border-[#3f6053]/40 rounded text-white placeholder-[#3f6053]/50 focus:outline-none focus:ring-2 focus:ring-[#F6FAF6]/50 focus:border-[#F6FAF6]/50 transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-white/90 mb-2 uppercase tracking-wide font-serif">
+                      Twitter / X Profile
+                    </label>
+                    <input
+                      type="text"
+                      name="twitter"
+                      value={applicationData.twitter}
+                      onChange={handleApplicationChange}
+                      placeholder="@yourhandle or https://x.com/yourhandle"
+                      className="w-full px-4 py-3 bg-[#000000]/80 border border-[#3f6053]/40 rounded text-white placeholder-[#3f6053]/50 focus:outline-none focus:ring-2 focus:ring-[#F6FAF6]/50 focus:border-[#F6FAF6]/50 transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-white/90 mb-2 uppercase tracking-wide font-serif">
+                      Advocate Email *
+                    </label>
+                    <input
+                      type="email"
+                      name="advocateEmail"
+                      required
+                      value={applicationData.advocateEmail}
+                      onChange={handleApplicationChange}
+                      placeholder="Email of your guild advocate"
+                      className="w-full px-4 py-3 bg-[#000000]/80 border border-[#3f6053]/40 rounded text-white placeholder-[#3f6053]/50 focus:outline-none focus:ring-2 focus:ring-[#F6FAF6]/50 focus:border-[#F6FAF6]/50 transition-all"
+                    />
+                    <p className="mt-1 text-xs text-white/50">
+                      Provide the email of a current guild member who is advocating for your application
+                    </p>
+                  </div>
+
+                  <div className="flex gap-4 pt-4">
+                    <button
+                      type="button"
+                      onClick={() => setShowPassportApplication(false)}
+                      className="flex-1 py-3 bg-transparent border border-[#F6FAF6]/30 hover:bg-[#F6FAF6]/10 text-[#F6FAF6] rounded font-serif text-sm uppercase tracking-wide transition-all"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="flex-1 py-3 bg-gradient-to-r from-[#F6FAF6] to-[#ffffff] hover:from-[#F6FAF6]/90 hover:to-[#ffffff]/90 text-[#000000] rounded font-serif text-sm uppercase tracking-wide transition-all shadow-lg hover:shadow-xl"
+                    >
+                      Submit Application
+                    </button>
+                  </div>
+                </form>
+              </>
+            )}
           </div>
         </div>
       )}

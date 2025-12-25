@@ -10,10 +10,13 @@ function ContributeForm() {
 
   const [formData, setFormData] = useState({
     name: '',
+    number: '',
     email: '',
+    linkedin: '',
     project: projectName,
     contributionType: '',
-    message: '',
+    contributionDescription: '',
+    whyContribute: '',
   });
 
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -115,6 +118,22 @@ function ContributeForm() {
             </div>
 
             <div>
+              <label htmlFor="number" className="block text-sm font-serif text-[#F6FAF6] mb-2">
+                Phone Number *
+              </label>
+              <input
+                type="tel"
+                id="number"
+                name="number"
+                required
+                value={formData.number}
+                onChange={handleChange}
+                className="w-full px-4 py-3 bg-[#000000]/40 border border-[#F6FAF6]/30 rounded text-white placeholder-white/40 focus:outline-none focus:border-[#F6FAF6] transition-colors"
+                placeholder="+1 (555) 000-0000"
+              />
+            </div>
+
+            <div>
               <label htmlFor="email" className="block text-sm font-serif text-[#F6FAF6] mb-2">
                 Email Address *
               </label>
@@ -127,6 +146,22 @@ function ContributeForm() {
                 onChange={handleChange}
                 className="w-full px-4 py-3 bg-[#000000]/40 border border-[#F6FAF6]/30 rounded text-white placeholder-white/40 focus:outline-none focus:border-[#F6FAF6] transition-colors"
                 placeholder="your.email@example.com"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="linkedin" className="block text-sm font-serif text-[#F6FAF6] mb-2">
+                LinkedIn Profile *
+              </label>
+              <input
+                type="url"
+                id="linkedin"
+                name="linkedin"
+                required
+                value={formData.linkedin}
+                onChange={handleChange}
+                className="w-full px-4 py-3 bg-[#000000]/40 border border-[#F6FAF6]/30 rounded text-white placeholder-white/40 focus:outline-none focus:border-[#F6FAF6] transition-colors"
+                placeholder="https://linkedin.com/in/yourprofile"
               />
             </div>
 
@@ -150,7 +185,7 @@ function ContributeForm() {
 
             <div>
               <label htmlFor="contributionType" className="block text-sm font-serif text-[#F6FAF6] mb-2">
-                How would you like to contribute? *
+                What would you like to contribute? *
               </label>
               <select
                 id="contributionType"
@@ -167,23 +202,41 @@ function ContributeForm() {
                 <option value="logistics">Logistics / Operations</option>
                 <option value="community">Community Building</option>
                 <option value="partnership">Partnership Opportunity</option>
+                <option value="mentorship">Mentorship</option>
+                <option value="resources">Resources / Equipment</option>
                 <option value="other">Other</option>
               </select>
             </div>
 
             <div>
-              <label htmlFor="message" className="block text-sm font-serif text-[#F6FAF6] mb-2">
-                Tell us more about your contribution *
+              <label htmlFor="contributionDescription" className="block text-sm font-serif text-[#F6FAF6] mb-2">
+                Description of Contribution *
               </label>
               <textarea
-                id="message"
-                name="message"
+                id="contributionDescription"
+                name="contributionDescription"
                 required
-                rows={6}
-                value={formData.message}
+                rows={4}
+                value={formData.contributionDescription}
                 onChange={handleChange}
                 className="w-full px-4 py-3 bg-[#000000]/40 border border-[#F6FAF6]/30 rounded text-white placeholder-white/40 focus:outline-none focus:border-[#F6FAF6] transition-colors resize-none"
-                placeholder="Please describe exactly how you would like to contribute, including any relevant experience, resources, or ideas..."
+                placeholder="Please describe exactly what you would like to contribute, including any relevant experience, resources, or ideas..."
+              />
+            </div>
+
+            <div>
+              <label htmlFor="whyContribute" className="block text-sm font-serif text-[#F6FAF6] mb-2">
+                Why do you want to contribute? *
+              </label>
+              <textarea
+                id="whyContribute"
+                name="whyContribute"
+                required
+                rows={4}
+                value={formData.whyContribute}
+                onChange={handleChange}
+                className="w-full px-4 py-3 bg-[#000000]/40 border border-[#F6FAF6]/30 rounded text-white placeholder-white/40 focus:outline-none focus:border-[#F6FAF6] transition-colors resize-none"
+                placeholder="Tell us about your motivation and what draws you to this project..."
               />
             </div>
 

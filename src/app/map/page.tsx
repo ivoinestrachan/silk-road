@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { HiHome, HiArrowRight } from 'react-icons/hi';
@@ -68,6 +68,7 @@ export default function MapPage() {
     focusOnElement: (element: { type: string; data: any }) => void;
     resetCamera: () => void;
   } | null>(null);
+  const [showLegendBoard, setShowLegendBoard] = useState<'legend' | 'bulletin'>('legend');
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -88,6 +89,22 @@ export default function MapPage() {
       }
     }
   }, [router]);
+
+  // Memoize filtered data to prevent unnecessary re-renders
+  const filteredCaravans = useMemo(() => {
+    return activeFilters.includes('caravans') ? allCaravans : [];
+  }, [activeFilters]);
+
+  const filteredMembers = useMemo(() => {
+    return isAuthenticated && activeFilters.includes('partners') ? partnerVCs : [];
+  }, [isAuthenticated, activeFilters]);
+
+  const filteredProperties = useMemo(() => {
+    return [
+      ...(activeFilters.includes('locations') ? properties : []),
+      ...(isAuthenticated && activeFilters.includes('suppliers') ? supplierLinks : []),
+    ];
+  }, [isAuthenticated, activeFilters]);
 
   const toggleFilter = (filterId: string) => {
     setActiveFilters(prev =>
@@ -549,7 +566,7 @@ export default function MapPage() {
           <iframe
             src={telosHouseUrl}
             className="w-full rounded border border-[#3f3f46]"
-            style={{ height: 'calc(90vh - 150px)' }}
+            style={{ height: 'calc(90vh - 180px)' }}
             title="Telos House"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           />
@@ -650,12 +667,24 @@ export default function MapPage() {
               )) || <p className="text-[#888888] text-sm">No amenities listed</p>}
             </div>
 
-            <button
-              onClick={() => setShowTelosIframe(true)}
-              className="w-full py-3 bg-[#0e639c] hover:bg-[#1177bb] text-white rounded font-semibold text-sm uppercase tracking-wide transition-all flex items-center justify-center gap-2"
-            >
-              View House <HiArrowRight className="text-lg" />
-            </button>
+            <div className="space-y-3">
+              <button
+                onClick={() => setShowTelosIframe(true)}
+                className="w-full py-3 bg-[#0e639c] hover:bg-[#1177bb] text-white rounded font-semibold text-sm uppercase tracking-wide transition-all flex items-center justify-center gap-2"
+              >
+                View House <HiArrowRight className="text-lg" />
+              </button>
+
+              {!isAuthenticated && (
+                <a
+                  href={`/contribute?project=${encodeURIComponent(selectedTelosProperty.name)}`}
+                  target="_blank"
+                  className="block w-full py-3 bg-gradient-to-r from-[#2b4539] to-[#3f6053] hover:from-[#3f6053] hover:to-[#2b4539] text-white text-center rounded font-semibold text-sm uppercase tracking-wide transition-all"
+                >
+                  Contribute to this Location
+                </a>
+              )}
+            </div>
           </div>
         </div>
       </MiniBrowserModal>
@@ -756,71 +785,107 @@ export default function MapPage() {
         />
       )}
 
-      {/* Map Legend */}
-      <div className="fixed bottom-4 right-4 z-[9997] max-w-[90vw] md:max-w-none">
-        <div className="bg-[#000000]/95 backdrop-blur-md rounded-lg border-2 border-[#3f6053]/50 shadow-2xl overflow-hidden p-4">
-          <div className="flex items-center justify-between mb-3 pb-2 border-b border-[#3f6053]/30">
-            <h3 className="font-serif text-white text-sm uppercase tracking-wider">
-              Map Legend
-            </h3>
-            {isAuthenticated && (
+      {/* Map Legend / Bulletin Board Toggle */}
+      {isAuthenticated && (
+        <div className="fixed bottom-4 right-4 z-[9997] max-w-[90vw] md:max-w-none">
+          <div className="bg-[#000000]/95 backdrop-blur-md rounded-lg border-2 border-[#3f6053]/50 shadow-2xl overflow-hidden" style={{ width: '210px', maxHeight: '600px' }}>
+            <div className="flex items-center justify-between px-4 py-3 bg-[#2d2d30] border-b border-[#3f3f46]">
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-serif text-[#cccccc] uppercase tracking-wide">
+                  {showLegendBoard === 'legend' ? 'Map Legend' : 'Bulletin Board'}
+                </h3>
+              </div>
               <button
-                onClick={() => {
-                  const bulletinBoard = document.querySelector('[class*="BulletinBoard"]') as HTMLElement;
-                  if (bulletinBoard) {
-                    const button = bulletinBoard.querySelector('button') as HTMLElement;
-                    if (button) button.click();
-                  }
-                }}
-                className="text-[#3f6053] hover:text-[#F6FAF6] transition-colors"
-                title="Open Bulletin Board"
+                onClick={() => setShowLegendBoard(showLegendBoard === 'legend' ? 'bulletin' : 'legend')}
+                className="text-[#cccccc] hover:text-white transition-colors"
+                title={showLegendBoard === 'legend' ? 'Show Bulletin Board' : 'Show Map Legend'}
               >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M2 2L8 8M8 8L14 2M8 8L2 14M8 8L14 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M7 16V4M7 4L3 8M7 4L11 8M17 8V20M17 20L21 16M17 20L13 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </button>
-            )}
-          </div>
-          <div className="space-y-2.5 text-xs">
-            <div className="flex items-center gap-2.5">
-              <div className="w-5 h-5 bg-red-600/80 rounded-full flex items-center justify-center border border-red-500/50 relative">
-                <div className="absolute inset-0 bg-red-500 rounded-full animate-ping opacity-75"></div>
-              </div>
-              <span className="text-white/90">Live Event</span>
             </div>
-            <div className="flex items-center gap-2.5">
-              <div className="w-5 h-0.5 bg-[#3f6053]" style={{ backgroundImage: 'repeating-linear-gradient(90deg, #3f6053 0, #3f6053 4px, transparent 4px, transparent 8px)' }}></div>
-              <span className="text-white/90">Upcoming Route (Dashed)</span>
-            </div>
-            <div className="flex items-center gap-2.5">
-              <div className="w-5 h-0.5 bg-[#3f6053]"></div>
-              <span className="text-white/90">Completed Route (Solid)</span>
-            </div>
-            <div className="flex items-center gap-2.5">
-              <img
-                src="/telos-house-logo.png"
-                alt="Telos House"
-                className="w-7 h-7 object-contain -ml-1"
-              />
-              <span className="text-white/90">Telos House</span>
-            </div>
-            {isAuthenticated && (
-              <>
-                <div className="flex items-center gap-2.5">
-                  <div className="w-5 h-5 bg-[#3f6053] rounded-full border-2 border-[#2b4539]"></div>
-                  <span className="text-white/90">Partner VCs</span>
-                </div>
-                <div className="flex items-center gap-2.5">
-                  <div className="w-5 h-5 bg-[#3f6053] rounded flex items-center justify-center border border-[#3f6053]">
-                    🏭
+
+            {showLegendBoard === 'legend' ? (
+              <div className="p-4">
+                <div className="space-y-2.5 text-xs">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-5 h-5 bg-red-600/80 rounded-full flex items-center justify-center border border-red-500/50 relative">
+                      <div className="absolute inset-0 bg-red-500 rounded-full animate-ping opacity-75"></div>
+                    </div>
+                    <span className="text-white/90">Live Event</span>
                   </div>
-                  <span className="text-white/90">Supplier Links</span>
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-5 h-0.5 bg-[#3f6053]" style={{ backgroundImage: 'repeating-linear-gradient(90deg, #3f6053 0, #3f6053 4px, transparent 4px, transparent 8px)' }}></div>
+                    <span className="text-white/90">Upcoming Route (Dashed)</span>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-5 h-0.5 bg-[#3f6053]"></div>
+                    <span className="text-white/90">Completed Route (Solid)</span>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <img
+                      src="/telos-house-logo.png"
+                      alt="Telos House"
+                      className="w-7 h-7 object-contain -ml-1"
+                    />
+                    <span className="text-white/90">Telos House</span>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-5 h-5 bg-[#3f6053] rounded-full border-2 border-[#2b4539]"></div>
+                    <span className="text-white/90">Partner VCs</span>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-5 h-5 bg-[#3f6053] rounded flex items-center justify-center border border-[#3f6053]">
+                      🏭
+                    </div>
+                    <span className="text-white/90">Supplier Links</span>
+                  </div>
                 </div>
-              </>
+              </div>
+            ) : (
+              <BulletinBoard inline />
             )}
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Map Legend for non-authenticated users */}
+      {!isAuthenticated && (
+        <div className="fixed bottom-4 right-4 z-[9997] max-w-[90vw] md:max-w-none">
+          <div className="bg-[#000000]/95 backdrop-blur-md rounded-lg border-2 border-[#3f6053]/50 shadow-2xl overflow-hidden p-4">
+            <div className="flex items-center justify-between mb-3 pb-2 border-b border-[#3f6053]/30">
+              <h3 className="font-serif text-white text-sm uppercase tracking-wider">
+                Map Legend
+              </h3>
+            </div>
+            <div className="space-y-2.5 text-xs">
+              <div className="flex items-center gap-2.5">
+                <div className="w-5 h-5 bg-red-600/80 rounded-full flex items-center justify-center border border-red-500/50 relative">
+                  <div className="absolute inset-0 bg-red-500 rounded-full animate-ping opacity-75"></div>
+                </div>
+                <span className="text-white/90">Live Event</span>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <div className="w-5 h-0.5 bg-[#3f6053]" style={{ backgroundImage: 'repeating-linear-gradient(90deg, #3f6053 0, #3f6053 4px, transparent 4px, transparent 8px)' }}></div>
+                <span className="text-white/90">Upcoming Route (Dashed)</span>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <div className="w-5 h-0.5 bg-[#3f6053]"></div>
+                <span className="text-white/90">Completed Route (Solid)</span>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <img
+                  src="/telos-house-logo.png"
+                  alt="Telos House"
+                  className="w-7 h-7 object-contain -ml-1"
+                />
+                <span className="text-white/90">Telos House</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Loading Screen */}
       {!mapLoaded && (
@@ -838,12 +903,9 @@ export default function MapPage() {
       {/* Map - full screen */}
       <div className="h-full w-full">
         <GuildMap
-          caravans={activeFilters.includes('caravans') ? allCaravans : []}
-          members={isAuthenticated && activeFilters.includes('partners') ? partnerVCs : []}
-          properties={[
-            ...(activeFilters.includes('locations') ? properties : []),
-            ...(isAuthenticated && activeFilters.includes('suppliers') ? supplierLinks : []),
-          ]}
+          caravans={filteredCaravans}
+          members={filteredMembers}
+          properties={filteredProperties}
           selectedCaravan={null}
           selectedElement={selectedElement}
           onElementClick={handleElementClick}
@@ -879,9 +941,6 @@ export default function MapPage() {
           onLogout={handleLogout}
         />
       )}
-
-      {/* Bulletin Board */}
-      {isAuthenticated && <BulletinBoard />}
     </div>
   );
 }

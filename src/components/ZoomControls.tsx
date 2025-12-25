@@ -8,7 +8,7 @@ interface ZoomControlsProps {
 
 export default function ZoomControls({ onZoomIn, onZoomOut, onResetView }: ZoomControlsProps) {
   return (
-    <div className="fixed bottom-24 right-4 z-[9997] flex flex-col gap-2">
+    <div className="fixed right-4 z-[10001] flex flex-col gap-2" style={{ bottom: '396px' }}>
       <button
         onClick={onZoomIn}
         className="w-12 h-12 bg-[#000000]/90 backdrop-blur-sm rounded-lg shadow-2xl border-2 border-[#F6FAF6]/50 hover:bg-[#000000]/95 hover:border-[#F6FAF6] transition-all flex items-center justify-center"

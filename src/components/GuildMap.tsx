@@ -300,24 +300,48 @@ function GuildMap({
       // Render all map elements
       renderMapElements();
 
+      // Re-render after map is idle to ensure everything is visible
+      map.once('idle', () => {
+        renderMapElements();
+
+        // Save the initial camera position after map is fully loaded and settled
+        const initialCenter = [map.getCenter().lng, map.getCenter().lat] as [number, number];
+        const initialZoom = map.getZoom();
+        const initialPitch = map.getPitch();
+        const initialBearing = map.getBearing();
+
+        originalCameraRef.current = {
+          center: initialCenter,
+          zoom: initialZoom,
+          pitch: initialPitch,
+          bearing: initialBearing
+        };
+
+        console.log('Saved initial camera position:', originalCameraRef.current);
+      });
+
       // Expose zoom controls to parent
       if (onZoomControlsReady) {
         onZoomControlsReady({
           zoomIn: () => {
-            const currentZoom = map.getZoom();
-            map.flyTo({ zoom: currentZoom + 2, duration: 500 });
+            if (!mapRef.current) return;
+            const currentZoom = mapRef.current.getZoom();
+            mapRef.current.setZoom(currentZoom + 1);
           },
           zoomOut: () => {
-            const currentZoom = map.getZoom();
-            map.flyTo({ zoom: currentZoom - 2, duration: 500 });
+            if (!mapRef.current) return;
+            const currentZoom = mapRef.current.getZoom();
+            mapRef.current.setZoom(currentZoom - 1);
           },
           resetView: () => {
-            map.flyTo({
+            if (!mapRef.current || !originalCameraRef.current) return;
+            console.log('Reset view called. Returning to:', originalCameraRef.current);
+            // Instantly jump back to the initial load camera position
+            mapRef.current.jumpTo({
               center: originalCameraRef.current.center,
               zoom: originalCameraRef.current.zoom,
               pitch: originalCameraRef.current.pitch,
-              bearing: originalCameraRef.current.bearing,
-              duration: 1500
+              bearing: originalCameraRef.current.bearing
             });
           }
         });
@@ -327,13 +351,7 @@ function GuildMap({
       if (onCameraControlsReady) {
         onCameraControlsReady({
           focusOnElement: (element: { type: string; data: any }) => {
-            // Save current camera position before focusing
-            originalCameraRef.current = {
-              center: [map.getCenter().lng, map.getCenter().lat],
-              zoom: map.getZoom(),
-              pitch: map.getPitch(),
-              bearing: map.getBearing()
-            };
+            // Don't overwrite the original camera position when focusing on elements
 
             if (element.type === 'caravan') {
               const caravan = element.data as Caravan;
@@ -468,19 +486,23 @@ function GuildMap({
 
   const renderMapElements = useCallback(() => {
     const map = mapRef.current;
-    if (!map) return;
+    if (!map || !map.isStyleLoaded()) return;
 
     // Clear existing markers
     markersRef.current.forEach(marker => marker.remove());
     markersRef.current = [];
 
-    // Clear existing route layers and sources
+    // Clear existing route layers and sources with proper cleanup
     const style = map.getStyle();
     if (style && style.layers) {
       style.layers.forEach((layer) => {
         if (layer.id.startsWith('route-')) {
-          if (map.getLayer(layer.id)) {
-            map.removeLayer(layer.id);
+          try {
+            if (map.getLayer(layer.id)) {
+              map.removeLayer(layer.id);
+            }
+          } catch (e) {
+            // Layer already removed, continue
           }
         }
       });
@@ -488,8 +510,12 @@ function GuildMap({
     if (style && style.sources) {
       Object.keys(style.sources).forEach((sourceId) => {
         if (sourceId.startsWith('route-')) {
-          if (map.getSource(sourceId)) {
-            map.removeSource(sourceId);
+          try {
+            if (map.getSource(sourceId)) {
+              map.removeSource(sourceId);
+            }
+          } catch (e) {
+            // Source already removed, continue
           }
         }
       });
@@ -594,8 +620,8 @@ function GuildMap({
         wrapper.style.zIndex = '10';
         const img = document.createElement('img');
         img.src = '/telos-house-logo.png';
-        img.style.width = '56px';
-        img.style.height = '56px';
+        img.style.width = '42px';
+        img.style.height = '42px';
         img.style.cursor = 'pointer';
         img.style.filter = 'drop-shadow(0 0 2px rgba(0,0,0,0.9))';
         wrapper.appendChild(img);
@@ -924,7 +950,7 @@ function GuildMap({
       const createPinMarker = (color: string) => {
         const el = document.createElement('div');
         el.innerHTML = `
-          <svg width="30" height="40" viewBox="0 0 30 40" xmlns="http://www.w3.org/2000/svg">
+          <svg width="20" height="28" viewBox="0 0 30 40" xmlns="http://www.w3.org/2000/svg">
             <path d="M15 0C6.716 0 0 6.716 0 15c0 8.284 15 25 15 25s15-16.716 15-25c0-8.284-6.716-15-15-15z" fill="${color}" stroke="#000" stroke-width="1.5"/>
             <circle cx="15" cy="15" r="6" fill="#fff"/>
           </svg>
@@ -1090,7 +1116,8 @@ function GuildMap({
   useEffect(() => {
     if (!mapRef.current || !mapRef.current.isStyleLoaded()) return;
     renderMapElements();
-  }, [caravans, members, properties, renderMapElements]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [caravans, members, properties]);
 
   // Handle selected element - do nothing to prevent map shifts
   useEffect(() => {
