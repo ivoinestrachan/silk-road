@@ -122,7 +122,7 @@ export default function PassportOverlay({ passportId, isAdmin, onLogout }: Passp
         <CornerBorder cornerColor="#F6FAF6" cornerSize="12px">
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="bg-[#000000]/30 backdrop-blur-sm p-3 rounded-lg shadow-2xl hover:bg-[#000000]/40 transition-all duration-300"
+            className="bg-[#000000]/10 backdrop-blur-sm p-3 rounded-lg shadow-2xl hover:bg-[#000000]/20 transition-all duration-300"
             aria-label="Open Passport"
           >
             <div className="flex items-center gap-2">

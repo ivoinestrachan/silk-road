@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { allCaravans, properties } from '@/data/mockData';
 import { Caravan, Property } from '@/types/guild';
+import CornerBorder from '@/components/CornerBorder';
 
 const GuildMap = dynamic(() => import('@/components/GuildMap'), {
   ssr: false,
@@ -190,10 +191,15 @@ export default function LoginPage() {
   return (
     <div className="relative h-screen overflow-hidden bg-[#000000]">
       {/* Left Sidebar with Title and Info - Top Half Only */}
-      <div className="fixed top-0 left-0 w-80 bg-[#000000] border-r border-[#3f6053]/30 z-[9999] flex flex-col" style={{ height: '50vh' }}>
+      <div className="fixed top-0 left-0 w-80 bg-[#000000]/10 backdrop-blur-md z-[9999] flex flex-col sidebar-corners-narrow" style={{ height: '50vh' }}>
+        <div className="corner-tl"></div>
+        <div className="corner-tr"></div>
+        <div className="corner-bl"></div>
+        <div className="corner-br"></div>
+
         {/* Title Section */}
-        <div className="p-6 border-b border-[#3f6053]/40">
-          <div className="mb-6 flex items-center justify-center">
+        <CornerBorder className="m-6 bg-[#000000]/10 backdrop-blur-md p-6" cornerColor="#3f6053" cornerSize="12px">
+          <div className="mb-4 flex items-center justify-center">
             <div className="flex items-center gap-1 px-4 py-2">
               <div className="h-px bg-[#3f6053]/40 flex-1 w-8"></div>
               <span className="text-xs text-white/70 uppercase tracking-widest px-2">
@@ -203,35 +209,33 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <h1 className="text-2xl md:text-3xl font-serif text-white tracking-wide mb-4 text-center"
+          <h1 className="text-2xl md:text-3xl font-serif text-white tracking-wide mb-2 text-center"
             style={{
               textShadow: '0 2px 8px rgba(0,0,0,0.5)'
             }}
           >
             TELOS GUILD NETWORK
           </h1>
-          <p className="text-xs text-white/80 text-center uppercase tracking-wider mb-4">
+          <p className="text-xs text-white/80 text-center uppercase tracking-wider mb-3">
             Trad-Digital Network
           </p>
 
-          <div className="h-px bg-[#3f6053]/40 mb-4"></div>
+          <div className="h-px bg-[#3f6053]/40 mb-3"></div>
 
-          <p className="text-sm text-white/70 text-center italic font-serif mb-6">
+          <p className="text-sm text-white/70 text-center italic font-serif mb-3">
             "The journey of a thousand miles begins with a single step"
           </p>
-        </div>
+        </CornerBorder>
 
         {/* Info Section */}
-        <div className="flex-1 overflow-y-auto p-6">
-          <div className="bg-gradient-to-br from-[#2b4539]/20 to-[#3f6053]/20 border border-[#3f6053]/30 rounded-lg backdrop-blur-sm p-4">
-            <h3 className="text-xs uppercase tracking-wider text-[#F6FAF6] mb-3 font-serif">
-              Welcome to Telos League
-            </h3>
-            <p className="text-white/60 text-sm italic">
-              Click the Login button to access the full network
-            </p>
-          </div>
-        </div>
+        <CornerBorder className="mx-6 mb-6 flex-1 bg-gradient-to-br from-[#2b4539]/5 to-[#3f6053]/5 backdrop-blur-sm p-4" cornerColor="#3f6053" cornerSize="12px">
+          <h3 className="text-xs uppercase tracking-wider text-[#F6FAF6] mb-3 font-serif">
+            Welcome to Telos League
+          </h3>
+          <p className="text-white/60 text-sm italic">
+            Click the Login button to access the full network
+          </p>
+        </CornerBorder>
       </div>
 
       {/* Loading Screen */}
@@ -267,49 +271,58 @@ export default function LoginPage() {
 
       {/* Map Legend */}
       <div className="fixed bottom-4 right-4 z-[9997] max-w-[90vw] md:max-w-none">
-        <div className="bg-[#000000]/95 backdrop-blur-md rounded-lg border-2 border-[#3f6053]/50 shadow-2xl overflow-hidden p-4">
-          <h3 className="font-serif text-white text-sm uppercase tracking-wider mb-3 border-b border-[#3f6053]/30 pb-2">
-            Map Legend
-          </h3>
-          <div className="space-y-2.5 text-xs">
-            <div className="flex items-center gap-2.5">
-              <img
-                src="/telos-house-logo.png"
-                alt="Telos House"
-                className="w-7 h-7 object-contain -ml-1"
-              />
-              <span className="text-white/90">Telos House Locations</span>
+        <CornerBorder className="bg-[#000000]/10 backdrop-blur-md shadow-2xl overflow-hidden" cornerColor="#3f6053" cornerSize="12px" style={{ width: '210px' }}>
+          <div className="flex items-center justify-between px-4 py-3 bg-[#2d2d30]/10 backdrop-blur-sm">
+            <h3 className="text-sm font-serif text-[#cccccc] uppercase tracking-wide">
+              Map Legend
+            </h3>
+          </div>
+          <div className="p-4">
+            <div className="space-y-2.5 text-xs">
+              <div className="flex items-center gap-2.5">
+                <img
+                  src="/telos-house-logo.png"
+                  alt="Telos House"
+                  className="w-7 h-7 object-contain -ml-1"
+                />
+                <span className="text-white/90">Telos House</span>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <div className="w-5 h-5 bg-red-600/80 rounded-full flex items-center justify-center border border-red-500/50 relative">
+                  <div className="absolute inset-0 bg-red-500 rounded-full animate-ping opacity-75"></div>
+                </div>
+                <span className="text-white/90">Live Event</span>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <div className="w-5 h-0.5 bg-[#3f6053]" style={{ backgroundImage: 'repeating-linear-gradient(90deg, #3f6053 0, #3f6053 4px, transparent 4px, transparent 8px)' }}></div>
+                <span className="text-white/90">Upcoming Route</span>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <div className="w-5 h-0.5 bg-[#3f6053]"></div>
+                <span className="text-white/90">Completed Route</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2.5">
-              <div className="w-3 h-3 rounded-full bg-[#00ff41]"></div>
-              <span className="text-white/90">Startup Cohort Members</span>
-            </div>
-            <div className="flex items-center gap-2.5">
-              <div className="w-3 h-0.5 bg-gradient-to-r from-[#00ff41] to-[#00ff41]/50"></div>
-              <span className="text-white/90">Guild Expeditions</span>
+            <div className="mt-3 pt-3 border-t border-[#3f6053]/30">
+              <p className="text-[10px] text-white/50 italic">
+                Login to view suppliers & partner VCs
+              </p>
             </div>
           </div>
-          <div className="mt-3 pt-3 border-t border-[#3f6053]/30">
-            <p className="text-[10px] text-white/50 italic">
-              Login to view suppliers & partner VCs
-            </p>
-          </div>
-        </div>
+        </CornerBorder>
       </div>
 
-      <button
-        onClick={() => setShowLoginModal(true)}
-        className="fixed top-2 right-2 md:top-4 md:right-4 z-[10000] bg-[#000000]/80 backdrop-blur-sm p-2 md:p-3 rounded-lg shadow-2xl border-2 border-[#3f6053]/50 hover:bg-[#000000]/90 hover:border-[#3f6053] transition-all duration-300"
-        style={{
-          boxShadow: '0 8px 32px rgba(0,0,0,0.4), inset 0 1px 2px rgba(63,96,83,0.1)'
-        }}
-        aria-label="Login"
-      >
-        <div className="flex items-center gap-1 md:gap-2">
-          <span className="text-xl md:text-2xl">🔐</span>
-          <span className="text-xs md:text-sm font-serif text-white uppercase tracking-wide">Login</span>
-        </div>
-      </button>
+      <div className="fixed top-4 right-4 z-[10000]">
+        <CornerBorder cornerColor="#F6FAF6" cornerSize="12px">
+          <button
+            onClick={() => setShowLoginModal(true)}
+            className="bg-[#000000]/10 backdrop-blur-sm p-3 shadow-2xl hover:bg-[#000000]/20 transition-all duration-300 flex items-center gap-2"
+            aria-label="Login"
+          >
+            <span className="text-2xl">🔐</span>
+            <span className="text-sm font-serif text-white uppercase tracking-wide">Login</span>
+          </button>
+        </CornerBorder>
+      </div>
 
       {/* Caravan/Property Details Modal */}
       {selectedElement && !showTelosIframe && selectedElement.type === 'caravan' && (

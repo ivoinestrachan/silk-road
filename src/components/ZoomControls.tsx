@@ -14,7 +14,7 @@ export default function ZoomControls({ onZoomIn, onZoomOut, onResetView }: ZoomC
       <CornerBorder cornerColor="#F6FAF6" cornerSize="12px">
         <button
           onClick={onZoomIn}
-          className="w-12 h-12 bg-[#000000]/30 backdrop-blur-sm rounded-lg shadow-2xl hover:bg-[#000000]/40 transition-all flex items-center justify-center"
+          className="w-12 h-12 bg-[#000000]/10 backdrop-blur-sm rounded-lg shadow-2xl hover:bg-[#000000]/20 transition-all flex items-center justify-center"
           title="Zoom In"
           aria-label="Zoom In"
         >
@@ -27,7 +27,7 @@ export default function ZoomControls({ onZoomIn, onZoomOut, onResetView }: ZoomC
       <CornerBorder cornerColor="#F6FAF6" cornerSize="12px">
         <button
           onClick={onResetView}
-          className="w-12 h-12 bg-[#000000]/30 backdrop-blur-sm rounded-lg shadow-2xl hover:bg-[#000000]/40 transition-all flex items-center justify-center"
+          className="w-12 h-12 bg-[#000000]/10 backdrop-blur-sm rounded-lg shadow-2xl hover:bg-[#000000]/20 transition-all flex items-center justify-center"
           title="Reset View"
           aria-label="Reset View"
         >
@@ -40,7 +40,7 @@ export default function ZoomControls({ onZoomIn, onZoomOut, onResetView }: ZoomC
       <CornerBorder cornerColor="#F6FAF6" cornerSize="12px">
         <button
           onClick={onZoomOut}
-          className="w-12 h-12 bg-[#000000]/30 backdrop-blur-sm rounded-lg shadow-2xl hover:bg-[#000000]/40 transition-all flex items-center justify-center"
+          className="w-12 h-12 bg-[#000000]/10 backdrop-blur-sm rounded-lg shadow-2xl hover:bg-[#000000]/20 transition-all flex items-center justify-center"
           title="Zoom Out"
           aria-label="Zoom Out"
         >

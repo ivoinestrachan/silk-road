@@ -693,9 +693,14 @@ export default function MapPage() {
   return (
     <div className="relative h-screen overflow-hidden bg-[#000000]">
       {/* Left Sidebar with Title and Filters - Adjacent */}
-      <div className="fixed top-0 left-0 w-[400px] bg-[#000000]/30 backdrop-blur-md border-r border-[#3f6053]/30 z-[9999] flex flex-col overflow-y-auto" style={{ maxHeight: '100vh' }}>
+      <div className="fixed top-0 left-0 w-[400px] bg-[#000000]/10 backdrop-blur-md z-[9999] flex flex-col overflow-y-auto sidebar-corners" style={{ maxHeight: '100vh' }}>
+        <div className="corner-tl"></div>
+        <div className="corner-tr"></div>
+        <div className="corner-bl"></div>
+        <div className="corner-br"></div>
+
         {/* Title Section */}
-        <div className="p-6 border-b border-[#3f6053]/30">
+        <CornerBorder className="m-6 bg-[#000000]/10 backdrop-blur-md p-6" cornerColor="#3f6053" cornerSize="12px">
           <div className="mb-4 flex items-center justify-center">
             <div className="flex items-center gap-1 px-4 py-2">
               <div className="h-px bg-[#3f6053]/40 flex-1 w-8"></div>
@@ -733,11 +738,10 @@ export default function MapPage() {
               </button>
             </div>
           )}
-        </div>
+        </CornerBorder>
 
         {/* Filters Section - Adjacent to Title */}
-        <div className="p-6">
-          <CornerBorder className="bg-gradient-to-br from-[#2b4539]/10 to-[#3f6053]/10 rounded-lg backdrop-blur-sm p-4" cornerColor="#3f6053">
+        <CornerBorder className="mx-6 mb-6 bg-gradient-to-br from-[#2b4539]/5 to-[#3f6053]/5 backdrop-blur-sm p-4" cornerColor="#3f6053" cornerSize="12px">
             <h3 className="text-xs uppercase tracking-wider text-[#F6FAF6] mb-3 font-serif">
               Map Filters
             </h3>
@@ -771,8 +775,7 @@ export default function MapPage() {
                 );
               })}
             </div>
-          </CornerBorder>
-        </div>
+        </CornerBorder>
       </div>
 
       {/* Zoom Controls */}
@@ -787,8 +790,8 @@ export default function MapPage() {
       {/* Map Legend / Bulletin Board Toggle */}
       {isAuthenticated && (
         <div className="fixed bottom-4 right-4 z-[9997] max-w-[90vw] md:max-w-none">
-          <CornerBorder className="bg-[#000000]/30 backdrop-blur-md rounded-lg shadow-2xl overflow-hidden" cornerColor="#3f6053" style={{ width: '210px', maxHeight: '600px' }}>
-            <div className="flex items-center justify-between px-4 py-3 bg-[#2d2d30]/30 backdrop-blur-sm">
+          <CornerBorder className="bg-[#000000]/10 backdrop-blur-md shadow-2xl overflow-hidden" cornerColor="#3f6053" cornerSize="12px" style={{ width: '210px', maxHeight: '600px' }}>
+            <div className="flex items-center justify-between px-4 py-3 bg-[#2d2d30]/10 backdrop-blur-sm">
               <div className="flex items-center gap-2">
                 <h3 className="text-sm font-serif text-[#cccccc] uppercase tracking-wide">
                   {showLegendBoard === 'legend' ? 'Map Legend' : 'Bulletin Board'}
@@ -852,34 +855,36 @@ export default function MapPage() {
       {/* Map Legend for non-authenticated users */}
       {!isAuthenticated && (
         <div className="fixed bottom-4 right-4 z-[9997] max-w-[90vw] md:max-w-none">
-          <CornerBorder className="bg-[#000000]/30 backdrop-blur-md rounded-lg shadow-2xl overflow-hidden p-4" cornerColor="#3f6053">
-            <div className="flex items-center justify-between mb-3 pb-2">
-              <h3 className="font-serif text-white text-sm uppercase tracking-wider">
+          <CornerBorder className="bg-[#000000]/10 backdrop-blur-md shadow-2xl overflow-hidden" cornerColor="#3f6053" cornerSize="12px" style={{ width: '210px' }}>
+            <div className="flex items-center justify-between px-4 py-3 bg-[#2d2d30]/10 backdrop-blur-sm">
+              <h3 className="text-sm font-serif text-[#cccccc] uppercase tracking-wide">
                 Map Legend
               </h3>
             </div>
-            <div className="space-y-2.5 text-xs">
-              <div className="flex items-center gap-2.5">
-                <div className="w-5 h-5 bg-red-600/80 rounded-full flex items-center justify-center border border-red-500/50 relative">
-                  <div className="absolute inset-0 bg-red-500 rounded-full animate-ping opacity-75"></div>
+            <div className="p-4">
+              <div className="space-y-2.5 text-xs">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-5 h-5 bg-red-600/80 rounded-full flex items-center justify-center border border-red-500/50 relative">
+                    <div className="absolute inset-0 bg-red-500 rounded-full animate-ping opacity-75"></div>
+                  </div>
+                  <span className="text-white/90">Live Event</span>
                 </div>
-                <span className="text-white/90">Live Event</span>
-              </div>
-              <div className="flex items-center gap-2.5">
-                <div className="w-5 h-0.5 bg-[#3f6053]" style={{ backgroundImage: 'repeating-linear-gradient(90deg, #3f6053 0, #3f6053 4px, transparent 4px, transparent 8px)' }}></div>
-                <span className="text-white/90">Upcoming Route (Dashed)</span>
-              </div>
-              <div className="flex items-center gap-2.5">
-                <div className="w-5 h-0.5 bg-[#3f6053]"></div>
-                <span className="text-white/90">Completed Route (Solid)</span>
-              </div>
-              <div className="flex items-center gap-2.5">
-                <img
-                  src="/telos-house-logo.png"
-                  alt="Telos House"
-                  className="w-7 h-7 object-contain -ml-1"
-                />
-                <span className="text-white/90">Telos House</span>
+                <div className="flex items-center gap-2.5">
+                  <div className="w-5 h-0.5 bg-[#3f6053]" style={{ backgroundImage: 'repeating-linear-gradient(90deg, #3f6053 0, #3f6053 4px, transparent 4px, transparent 8px)' }}></div>
+                  <span className="text-white/90">Upcoming Route (Dashed)</span>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <div className="w-5 h-0.5 bg-[#3f6053]"></div>
+                  <span className="text-white/90">Completed Route (Solid)</span>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <img
+                    src="/telos-house-logo.png"
+                    alt="Telos House"
+                    className="w-7 h-7 object-contain -ml-1"
+                  />
+                  <span className="text-white/90">Telos House</span>
+                </div>
               </div>
             </div>
           </CornerBorder>
