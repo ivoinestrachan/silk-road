@@ -1076,6 +1076,7 @@ function GuildMap({
         liveMarkerEl.style.display = 'flex';
         liveMarkerEl.style.alignItems = 'center';
         liveMarkerEl.style.justifyContent = 'center';
+        liveMarkerEl.style.cursor = 'pointer';
 
         // Blinking red circle
         const blinkingCircle = document.createElement('div');

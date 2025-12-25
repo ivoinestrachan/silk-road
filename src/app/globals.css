@@ -90,3 +90,109 @@ body {
 .animate-scan {
   animation: scan 8s linear infinite;
 }
+
+/* Corner-only borders - digital aesthetic */
+.corner-borders {
+  position: relative;
+  border: none !important;
+}
+
+.corner-borders::before,
+.corner-borders::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-color: currentColor;
+}
+
+/* Top corners */
+.corner-borders::before {
+  top: 0;
+  left: 0;
+  border-top: 2px solid;
+  border-left: 2px solid;
+}
+
+.corner-borders::after {
+  top: 0;
+  right: 0;
+  border-top: 2px solid;
+  border-right: 2px solid;
+}
+
+/* Bottom corners */
+.corner-borders-bottom::before,
+.corner-borders-bottom::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-color: currentColor;
+}
+
+.corner-borders-bottom::before {
+  bottom: 0;
+  left: 0;
+  border-bottom: 2px solid;
+  border-left: 2px solid;
+}
+
+.corner-borders-bottom::after {
+  bottom: 0;
+  right: 0;
+  border-bottom: 2px solid;
+  border-right: 2px solid;
+}
+
+/* Complete corner borders utility class */
+.corners-only {
+  position: relative;
+  border: none !important;
+}
+
+.corners-only::before,
+.corners-only::after,
+.corners-only > .corner-tl,
+.corners-only > .corner-tr,
+.corners-only > .corner-bl,
+.corners-only > .corner-br {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+}
+
+/* Top-left */
+.corners-only::before {
+  top: -2px;
+  left: -2px;
+  border-top: 2px solid;
+  border-left: 2px solid;
+  border-color: inherit;
+}
+
+/* Top-right */
+.corners-only::after {
+  top: -2px;
+  right: -2px;
+  border-top: 2px solid;
+  border-right: 2px solid;
+  border-color: inherit;
+}
+
+/* Bottom corners created with data attributes */
+.corners-only[data-corners]::before {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: -2px;
+  width: 16px;
+  height: 16px;
+  border-bottom: 2px solid;
+  border-left: 2px solid;
+  border-color: inherit;
+  top: auto;
+  border-top: none;
+}

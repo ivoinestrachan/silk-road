@@ -9,6 +9,7 @@ import PhotoGalleryModal from '@/components/PhotoGalleryModal';
 import MiniBrowserModal from '@/components/MiniBrowserModal';
 import BulletinBoard from '@/components/BulletinBoard';
 import ZoomControls from '@/components/ZoomControls';
+import CornerBorder from '@/components/CornerBorder';
 import {
   allCaravans,
   properties,
@@ -675,15 +676,13 @@ export default function MapPage() {
                 View House <HiArrowRight className="text-lg" />
               </button>
 
-              {!isAuthenticated && (
-                <a
-                  href={`/contribute?project=${encodeURIComponent(selectedTelosProperty.name)}`}
-                  target="_blank"
-                  className="block w-full py-3 bg-gradient-to-r from-[#2b4539] to-[#3f6053] hover:from-[#3f6053] hover:to-[#2b4539] text-white text-center rounded font-semibold text-sm uppercase tracking-wide transition-all"
-                >
-                  Contribute to this Location
-                </a>
-              )}
+              <a
+                href={`/contribute?project=${encodeURIComponent(selectedTelosProperty.name)}`}
+                target="_blank"
+                className="block w-full py-3 bg-gradient-to-r from-[#2b4539] to-[#3f6053] hover:from-[#3f6053] hover:to-[#2b4539] text-white text-center rounded font-semibold text-sm uppercase tracking-wide transition-all"
+              >
+                Contribute to this Location
+              </a>
             </div>
           </div>
         </div>
@@ -694,7 +693,7 @@ export default function MapPage() {
   return (
     <div className="relative h-screen overflow-hidden bg-[#000000]">
       {/* Left Sidebar with Title and Filters - Adjacent */}
-      <div className="fixed top-0 left-0 w-80 bg-[#000000] border-r border-[#3f6053]/30 z-[9999] flex flex-col overflow-y-auto" style={{ maxHeight: '80vh' }}>
+      <div className="fixed top-0 left-0 w-[400px] bg-[#000000]/30 backdrop-blur-md border-r border-[#3f6053]/30 z-[9999] flex flex-col overflow-y-auto" style={{ maxHeight: '100vh' }}>
         {/* Title Section */}
         <div className="p-6 border-b border-[#3f6053]/30">
           <div className="mb-4 flex items-center justify-center">
@@ -738,7 +737,7 @@ export default function MapPage() {
 
         {/* Filters Section - Adjacent to Title */}
         <div className="p-6">
-          <div className="bg-gradient-to-br from-[#2b4539]/20 to-[#3f6053]/20 border border-[#3f6053]/30 rounded-lg backdrop-blur-sm p-4">
+          <CornerBorder className="bg-gradient-to-br from-[#2b4539]/10 to-[#3f6053]/10 rounded-lg backdrop-blur-sm p-4" cornerColor="#3f6053">
             <h3 className="text-xs uppercase tracking-wider text-[#F6FAF6] mb-3 font-serif">
               Map Filters
             </h3>
@@ -772,7 +771,7 @@ export default function MapPage() {
                 );
               })}
             </div>
-          </div>
+          </CornerBorder>
         </div>
       </div>
 
@@ -788,8 +787,8 @@ export default function MapPage() {
       {/* Map Legend / Bulletin Board Toggle */}
       {isAuthenticated && (
         <div className="fixed bottom-4 right-4 z-[9997] max-w-[90vw] md:max-w-none">
-          <div className="bg-[#000000]/95 backdrop-blur-md rounded-lg border-2 border-[#3f6053]/50 shadow-2xl overflow-hidden" style={{ width: '210px', maxHeight: '600px' }}>
-            <div className="flex items-center justify-between px-4 py-3 bg-[#2d2d30] border-b border-[#3f3f46]">
+          <CornerBorder className="bg-[#000000]/30 backdrop-blur-md rounded-lg shadow-2xl overflow-hidden" cornerColor="#3f6053" style={{ width: '210px', maxHeight: '600px' }}>
+            <div className="flex items-center justify-between px-4 py-3 bg-[#2d2d30]/30 backdrop-blur-sm">
               <div className="flex items-center gap-2">
                 <h3 className="text-sm font-serif text-[#cccccc] uppercase tracking-wide">
                   {showLegendBoard === 'legend' ? 'Map Legend' : 'Bulletin Board'}
@@ -846,15 +845,15 @@ export default function MapPage() {
             ) : (
               <BulletinBoard inline />
             )}
-          </div>
+          </CornerBorder>
         </div>
       )}
 
       {/* Map Legend for non-authenticated users */}
       {!isAuthenticated && (
         <div className="fixed bottom-4 right-4 z-[9997] max-w-[90vw] md:max-w-none">
-          <div className="bg-[#000000]/95 backdrop-blur-md rounded-lg border-2 border-[#3f6053]/50 shadow-2xl overflow-hidden p-4">
-            <div className="flex items-center justify-between mb-3 pb-2 border-b border-[#3f6053]/30">
+          <CornerBorder className="bg-[#000000]/30 backdrop-blur-md rounded-lg shadow-2xl overflow-hidden p-4" cornerColor="#3f6053">
+            <div className="flex items-center justify-between mb-3 pb-2">
               <h3 className="font-serif text-white text-sm uppercase tracking-wider">
                 Map Legend
               </h3>
@@ -883,7 +882,7 @@ export default function MapPage() {
                 <span className="text-white/90">Telos House</span>
               </div>
             </div>
-          </div>
+          </CornerBorder>
         </div>
       )}
 

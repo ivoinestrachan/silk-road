@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import gsap from 'gsap';
+import CornerBorder from './CornerBorder';
 
 interface PassportOverlayProps {
   passportId: string;
@@ -117,19 +118,20 @@ export default function PassportOverlay({ passportId, isAdmin, onLogout }: Passp
   return (
     <>
       {/* Passport Button - Fixed positioning */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="fixed top-4 right-4 z-[10000] bg-[#000000]/80 backdrop-blur-sm p-3 rounded-lg shadow-2xl border-2 border-[#3f6053]/50 hover:bg-[#000000]/90 hover:border-[#3f6053] transition-all duration-300"
-        style={{
-          boxShadow: '0 8px 32px rgba(0,0,0,0.4), inset 0 1px 2px rgba(63,96,83,0.1)'
-        }}
-        aria-label="Open Passport"
-      >
-        <div className="flex items-center gap-2">
-          <span className="text-2xl">🛂</span>
-          <span className="text-sm font-serif text-[#F6FAF6] uppercase tracking-wide">Passport</span>
-        </div>
-      </button>
+      <div className="fixed top-4 right-4 z-[10000]">
+        <CornerBorder cornerColor="#F6FAF6" cornerSize="12px">
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="bg-[#000000]/30 backdrop-blur-sm p-3 rounded-lg shadow-2xl hover:bg-[#000000]/40 transition-all duration-300"
+            aria-label="Open Passport"
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">🛂</span>
+              <span className="text-sm font-serif text-[#F6FAF6] uppercase tracking-wide">Passport</span>
+            </div>
+          </button>
+        </CornerBorder>
+      </div>
 
       {/* Full Screen Overlay */}
       <div
